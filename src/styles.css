@@ -960,6 +960,7 @@ h1 {
   font-size: 12px;
   font-weight: 760;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .action-pill:disabled {
@@ -992,6 +993,17 @@ h1 {
   background: var(--surface-strong);
   border-color: var(--surface-strong);
   color: #fff;
+}
+
+.action-planned {
+  background: var(--blue-soft);
+  border-color: var(--blue-border);
+  color: var(--blue);
+}
+
+.action-planned:hover {
+  border-color: #86bbdd;
+  background: #d9ebf6;
 }
 
 .action-delete {

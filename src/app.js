@@ -311,9 +311,7 @@ function reminderCard(item, compact = false) {
         <button class="action-pill action-edit" type="button" data-action="edit-task" data-plant-id="${item.plant.id}" data-task-id="${item.task.id}">
           <i class="ti ti-pencil"></i> Редактировать
         </button>
-        <button class="action-pill action-done" type="button" data-action="done" data-plant-id="${item.plant.id}" data-task-id="${item.task.id}">
-          <i class="ti ti-check"></i> Сделано
-        </button>
+        ${completionButton(item)}
       </div>
     </article>
   `;
@@ -337,11 +335,23 @@ function timelineCard(item) {
         <button class="action-pill action-edit" type="button" data-action="edit-task" data-plant-id="${item.plant.id}" data-task-id="${item.task.id}">
           <i class="ti ti-pencil"></i> Редактировать
         </button>
-        <button class="action-pill action-done" type="button" data-action="done" data-plant-id="${item.plant.id}" data-task-id="${item.task.id}">
-          <i class="ti ti-check"></i> Сделано
-        </button>
+        ${completionButton(item)}
       </div>
     </article>
+  `;
+}
+
+function completionButton(item) {
+  const isPlanned = item.diff > 0;
+  const className = isPlanned ? "action-planned" : "action-done";
+  const icon = isPlanned ? "ti-calendar" : "ti-check";
+  const label = isPlanned ? "Запланировано" : "Сделано";
+  const title = isPlanned ? "Нажмите, когда работа выполнена" : "Отметить работу выполненной";
+
+  return `
+    <button class="action-pill ${className}" type="button" title="${escapeHtml(title)}" data-action="done" data-plant-id="${item.plant.id}" data-task-id="${item.task.id}">
+      <i class="ti ${icon}"></i> ${escapeHtml(label)}
+    </button>
   `;
 }
 
