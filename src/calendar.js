@@ -115,12 +115,14 @@ export function getAllTasks(plants, baseIso = todayIso()) {
 
 export function completeTask({ plant, task, doneDate, note, interval, repeat }) {
   const nextScheduled = repeat ? addDays(doneDate, interval) : "";
+  const preparationIds = normalizePreparationIds(task);
   const logEntry = {
     id: makeId("log"),
     plantId: plant.id,
     plantName: plant.name,
     taskType: task.type,
-    preparationId: task.preparationId || "",
+    preparationId: preparationIds[0] || "",
+    preparationIds,
     doneDate,
     note: note.trim(),
     nextScheduled,
@@ -138,10 +140,12 @@ export function completeTask({ plant, task, doneDate, note, interval, repeat }) 
 
 export function normalizeTask(task, plantType = "other") {
   const type = task.type || "water";
+  const preparationIds = normalizePreparationIds(task);
   return {
     id: task.id || makeId("task"),
     type,
-    preparationId: task.preparationId || "",
+    preparationId: preparationIds[0] || "",
+    preparationIds,
     nextDate: task.nextDate || todayIso(),
     interval: Number(task.interval || DEFAULT_INTERVALS[type]?.[plantType] || 14),
     repeat: task.repeat !== false,
@@ -171,4 +175,9 @@ export function normalizePreparation(preparation) {
     dosage: preparation.dosage?.trim() || "",
     description: preparation.description?.trim() || "",
   };
+}
+
+function normalizePreparationIds(task) {
+  const ids = Array.isArray(task?.preparationIds) ? task.preparationIds : [task?.preparationId];
+  return [...new Set(ids.map((id) => String(id || "").trim()).filter(Boolean))];
 }

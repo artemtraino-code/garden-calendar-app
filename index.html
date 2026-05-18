@@ -320,11 +320,16 @@
           </label>
         </div>
 
-        <label class="field">
-          <span>Препарат</span>
-          <select id="work-preparation-id"></select>
-        </label>
-        <div id="work-preparation-preview" class="preparation-preview is-hidden"></div>
+        <div class="field">
+          <span>Препараты</span>
+          <div class="preparation-picker-row">
+            <select id="work-preparation-id"></select>
+            <button id="add-work-preparation-btn" class="soft-btn" type="button">
+              <i class="ti ti-plus"></i> Добавить
+            </button>
+          </div>
+        </div>
+        <div id="work-preparation-preview" class="preparation-selection is-empty"></div>
 
         <label class="field">
           <span>Заметка</span>
@@ -403,7 +408,7 @@
           <option value="harvest">Сбор</option>
           <option value="repot">Пересадка</option>
         </select>
-        <select class="task-preparation" aria-label="Препарат"></select>
+        <select class="task-preparation" aria-label="Препараты" multiple size="3"></select>
         <input class="task-next-date" type="date" aria-label="Следующая дата">
         <input class="task-interval" type="number" min="1" max="365" value="14" aria-label="Интервал">
         <input class="task-notes" type="text" placeholder="Препарат, доза, примечание" aria-label="Заметка">

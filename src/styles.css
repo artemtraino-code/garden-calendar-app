@@ -820,7 +820,7 @@ h1 {
 }
 
 .preparation-dosage,
-.preparation-preview .preparation-preview-dosage {
+.preparation-selected .preparation-preview-dosage {
   color: var(--text);
   font-size: 12px;
   line-height: 1.35;
@@ -828,7 +828,7 @@ h1 {
 }
 
 .preparation-dosage strong,
-.preparation-preview .preparation-preview-dosage {
+.preparation-selected .preparation-preview-dosage {
   color: var(--green-dark);
   font-weight: 800;
 }
@@ -1017,11 +1017,16 @@ h1 {
 }
 
 .preparation-inline,
-.preparation-preview {
+.preparation-selected {
   display: grid;
   grid-template-columns: 34px minmax(0, 1fr);
   align-items: center;
   gap: 8px;
+}
+
+.preparation-stack {
+  display: grid;
+  gap: 7px;
 }
 
 .preparation-inline {
@@ -1029,14 +1034,14 @@ h1 {
 }
 
 .preparation-inline strong,
-.preparation-preview strong {
+.preparation-selected strong {
   display: block;
   font-size: 12px;
   line-height: 1.2;
 }
 
 .preparation-inline small,
-.preparation-preview p {
+.preparation-selected p {
   display: block;
   color: var(--muted);
   font-size: 11px;
@@ -1044,11 +1049,40 @@ h1 {
   margin: 2px 0 0;
 }
 
-.preparation-preview {
+.preparation-picker-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.preparation-selection {
+  display: grid;
+  gap: 7px;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--surface-soft);
   padding: 8px;
+}
+
+.preparation-selection.is-empty {
+  border-style: dashed;
+}
+
+.preparation-selection .muted {
+  margin: 0;
+}
+
+.preparation-selected {
+  grid-template-columns: 34px minmax(0, 1fr) 36px;
+  align-items: start;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 7px;
+}
+
+.preparation-remove-btn {
+  align-self: start;
 }
 
 .preparation-card-image,
@@ -1285,7 +1319,7 @@ button.postpone-calendar-day:hover {
 
 .task-row {
   display: grid;
-  grid-template-columns: 120px 140px 130px 82px minmax(130px, 1fr) 36px;
+  grid-template-columns: 120px minmax(170px, 1.1fr) 130px 82px minmax(130px, 1fr) 36px;
   gap: 7px;
   align-items: center;
 }
@@ -1388,6 +1422,7 @@ button.postpone-calendar-day:hover {
   }
 
   .form-grid,
+  .preparation-picker-row,
   .task-row {
     grid-template-columns: 1fr;
   }

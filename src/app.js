@@ -82,6 +82,7 @@ const els = {
   workInterval: document.querySelector("#work-interval"),
   workRepeat: document.querySelector("#work-repeat"),
   workPreparationId: document.querySelector("#work-preparation-id"),
+  addWorkPreparationBtn: document.querySelector("#add-work-preparation-btn"),
   workPreparationPreview: document.querySelector("#work-preparation-preview"),
   workNotes: document.querySelector("#work-notes"),
   workSubmitButton: document.querySelector("#work-submit-btn"),
@@ -137,7 +138,9 @@ function bindEvents() {
   els.workPlantId.addEventListener("change", () => updateWorkIntervalDefault());
   els.workType.addEventListener("change", () => updateWorkIntervalDefault());
   els.workRepeat.addEventListener("change", () => updateWorkIntervalDefault({ resetInterval: false }));
-  els.workPreparationId.addEventListener("change", updateWorkPreparationPreview);
+  els.workPreparationId.addEventListener("change", updateWorkPreparationAddState);
+  els.addWorkPreparationBtn.addEventListener("click", addWorkPreparationFromSelect);
+  els.workPreparationPreview.addEventListener("click", removeWorkPreparation);
   els.preparationForm.addEventListener("submit", savePreparationFromForm);
 
   document.querySelectorAll("[data-close-dialog]").forEach((button) => {
@@ -313,7 +316,7 @@ function renderDashboardControls() {
 
 function reminderCard(item, compact = false) {
   const statusClass = item.status === "overdue" ? "overdue-card" : item.status === "today" ? "today-card" : "";
-  const preparation = getPreparation(item.task.preparationId);
+  const preparations = getPreparations(item.task);
   const dateText = item.diff < 0
     ? `Просрочено ${Math.abs(item.diff)} дн.`
     : item.diff === 0
@@ -327,7 +330,7 @@ function reminderCard(item, compact = false) {
       <div class="reminder-info">
         <h3>${escapeHtml(title)}</h3>
         <p>${escapeHtml(dateText)} · ${item.task.repeat === false ? "разовая работа" : `каждые ${item.task.interval} дн.`}${item.task.notes ? ` · ${escapeHtml(item.task.notes)}` : ""}</p>
-        ${preparation ? preparationInline(preparation) : ""}
+        ${preparationsInline(preparations)}
       </div>
       <div class="card-actions">
         <button class="action-pill action-edit" type="button" data-action="edit-task" data-plant-id="${item.plant.id}" data-task-id="${item.task.id}">
@@ -341,7 +344,7 @@ function reminderCard(item, compact = false) {
 
 function timelineCard(item) {
   const statusClass = item.status === "today" ? "today-card" : "";
-  const preparation = getPreparation(item.task.preparationId);
+  const preparations = getPreparations(item.task);
   const workTitle = `${TASK_LABELS[item.task.type] || item.task.type} - ${item.plant.name}`;
   const repeatText = item.task.repeat === false ? "разовая работа" : `каждые ${item.task.interval} дн.`;
 
@@ -351,7 +354,7 @@ function timelineCard(item) {
       <div class="reminder-info">
         <h3>${escapeHtml(timelineDateTitle(item))}</h3>
         <p><strong>${escapeHtml(workTitle)}</strong> · ${escapeHtml(repeatText)}${item.task.notes ? ` · ${escapeHtml(item.task.notes)}` : ""}</p>
-        ${preparation ? preparationInline(preparation) : ""}
+        ${preparationsInline(preparations)}
       </div>
       <div class="card-actions">
         <button class="action-pill action-edit" type="button" data-action="edit-task" data-plant-id="${item.plant.id}" data-task-id="${item.task.id}">
@@ -525,7 +528,8 @@ function logMiniForPlant(entry) {
 
 function taskMini(task) {
   const item = getAllTasks([{ tasks: [task] }])[0];
-  const preparation = getPreparation(task.preparationId);
+  const preparations = getPreparations(task);
+  const preparationText = preparations.map((preparation) => preparation.name).join(" + ");
   const dateClass = item.status === "overdue" ? "overdue" : item.status === "today" ? "today" : "";
   const dateText = item.diff < 0 ? `просрочено ${Math.abs(item.diff)}д` : item.diff === 0 ? "сегодня" : formatDate(task.nextDate);
   return `
@@ -533,7 +537,7 @@ function taskMini(task) {
       <span class="task-dot task-${task.type}"></span>
       <div>
         <strong>${escapeHtml(TASK_LABELS[task.type] || task.type)}</strong>
-        <small><span class="task-date ${dateClass}">${escapeHtml(dateText)}</span>${preparation ? ` · ${escapeHtml(preparation.name)}` : ""}${task.notes ? ` · ${escapeHtml(task.notes)}` : ""}</small>
+        <small><span class="task-date ${dateClass}">${escapeHtml(dateText)}</span>${preparationText ? ` · ${escapeHtml(preparationText)}` : ""}${task.notes ? ` · ${escapeHtml(task.notes)}` : ""}</small>
       </div>
     </div>
   `;
@@ -544,8 +548,8 @@ function renderLog() {
   const entries = state.log
     .filter((entry) => {
       if (!search) return true;
-      const preparation = getPreparation(entry.preparationId);
-      return [entry.plantName, TASK_LABELS[entry.taskType] || entry.taskType, preparation?.name, entry.note]
+      const preparationNames = getPreparations(entry).map((preparation) => preparation.name).join(" ");
+      return [entry.plantName, TASK_LABELS[entry.taskType] || entry.taskType, preparationNames, entry.note]
         .some((value) => String(value || "").toLowerCase().includes(search));
     })
     .sort((a, b) => b.doneDate.localeCompare(a.doneDate));
@@ -554,15 +558,16 @@ function renderLog() {
 }
 
 function logRow(entry) {
-  const preparation = getPreparation(entry.preparationId);
+  const preparations = getPreparations(entry);
+  const preparationText = preparations.map((preparation) => preparation.name).join(" + ");
   const nextText = entry.nextScheduled ? ` · следующее ${formatDate(entry.nextScheduled)}` : " · без повторения";
   return `
     <article class="log-row">
       <div class="task-icon task-${entry.taskType}"><i class="ti ${TASK_ICONS[entry.taskType] || "ti-calendar"}"></i></div>
       <div>
         <h3>${escapeHtml(entry.plantName)}</h3>
-        <p>${escapeHtml(TASK_LABELS[entry.taskType] || entry.taskType)}${preparation ? ` · ${escapeHtml(preparation.name)}` : ""}${entry.note ? ` · ${escapeHtml(entry.note)}` : ""}${escapeHtml(nextText)}</p>
-        ${preparation ? preparationInline(preparation) : ""}
+        <p>${escapeHtml(TASK_LABELS[entry.taskType] || entry.taskType)}${preparationText ? ` · ${escapeHtml(preparationText)}` : ""}${entry.note ? ` · ${escapeHtml(entry.note)}` : ""}${escapeHtml(nextText)}</p>
+        ${preparationsInline(preparations)}
       </div>
       <time>${formatDate(entry.doneDate)}</time>
     </article>
@@ -689,11 +694,13 @@ function deletePreparation(preparation) {
   state.preparations = state.preparations.filter((item) => item.id !== preparation.id);
   state.plants.forEach((plant) => {
     plant.tasks.forEach((task) => {
-      if (task.preparationId === preparation.id) task.preparationId = "";
+      task.preparationIds = getPreparationIds(task).filter((id) => id !== preparation.id);
+      task.preparationId = task.preparationIds[0] || "";
     });
   });
   state.log.forEach((entry) => {
-    if (entry.preparationId === preparation.id) entry.preparationId = "";
+    entry.preparationIds = getPreparationIds(entry).filter((id) => id !== preparation.id);
+    entry.preparationId = entry.preparationIds[0] || "";
   });
   persistAndRender();
 }
@@ -719,7 +726,7 @@ function addTaskRow(task = {}) {
   const type = task.type || "water";
   node.querySelector(".task-id").value = task.id || "";
   node.querySelector(".task-type").value = type;
-  node.querySelector(".task-preparation").innerHTML = preparationOptions(task.preparationId);
+  node.querySelector(".task-preparation").innerHTML = preparationOptions(getPreparationIds(task), null);
   node.querySelector(".task-next-date").value = task.nextDate || todayIso();
   node.querySelector(".task-interval").value = task.interval || DEFAULT_INTERVALS[type]?.flower || 14;
   node.querySelector(".task-notes").value = task.notes || "";
@@ -762,7 +769,7 @@ function collectTaskRows() {
     .map((row) => ({
       id: row.querySelector(".task-id").value || makeId("task"),
       type: row.querySelector(".task-type").value,
-      preparationId: row.querySelector(".task-preparation").value,
+      preparationIds: selectedValues(row.querySelector(".task-preparation")),
       nextDate: row.querySelector(".task-next-date").value,
       interval: row.querySelector(".task-interval").value,
       notes: row.querySelector(".task-notes").value,
@@ -802,7 +809,7 @@ function openWorkDialog(options = {}) {
   els.workForm.reset();
   els.workTaskId.value = existingTask?.id || "";
   renderWorkPlantOptions(selectedPlant?.id || options.plantId);
-  renderWorkPreparationOptions(existingTask?.preparationId || options.preparationId || "");
+  renderWorkPreparationPicker(getPreparationIds(existingTask || options));
   els.workType.value = type;
   els.workNextDate.value = existingTask?.nextDate || todayIso();
   els.workRepeat.value = existingTask ? (existingTask.repeat === false ? "once" : "repeat") : (options.repeat ? "repeat" : "once");
@@ -810,7 +817,6 @@ function openWorkDialog(options = {}) {
   els.workNotes.value = existingTask?.notes || "";
   els.workSubmitButton.textContent = isEditing ? "Сохранить" : "Запланировать";
   updateWorkIntervalDefault({ resetInterval: false });
-  updateWorkPreparationPreview();
   els.workDialogTitle.textContent = `${isEditing ? "Редактировать" : "Запланировать"}: ${TASK_LABELS[type] || "работа"}`;
   els.workDialog.showModal();
 }
@@ -827,24 +833,64 @@ function renderWorkPlantOptions(selectedPlantId = "") {
   }
 }
 
-function renderWorkPreparationOptions(selectedPreparationId = "") {
-  els.workPreparationId.innerHTML = preparationOptions(selectedPreparationId, "Без препарата");
-  els.workPreparationId.value = selectedPreparationId && state.preparations.some((item) => item.id === selectedPreparationId)
-    ? selectedPreparationId
-    : "";
+function renderWorkPreparationPicker(selectedIds = []) {
+  const ids = selectedIds.filter((id) => state.preparations.some((preparation) => preparation.id === id));
+  const availablePreparations = state.preparations
+    .filter((preparation) => !ids.includes(preparation.id))
+    .slice()
+    .sort((a, b) => a.name.localeCompare(b.name, "ru"));
+  const emptyLabel = availablePreparations.length ? "Выбрать препарат" : "Все препараты добавлены";
+
+  els.workPreparationId.innerHTML = [
+    `<option value="">${escapeHtml(emptyLabel)}</option>`,
+    ...availablePreparations.map((preparation) => `<option value="${escapeHtml(preparation.id)}">${escapeHtml(preparation.name)}</option>`),
+  ].join("");
+  els.workPreparationId.disabled = availablePreparations.length === 0;
+  renderWorkPreparationSelection(ids);
+  updateWorkPreparationAddState();
 }
 
-function updateWorkPreparationPreview() {
-  const preparation = getPreparation(els.workPreparationId.value);
-  els.workPreparationPreview.classList.toggle("is-hidden", !preparation);
-  els.workPreparationPreview.innerHTML = preparation ? `
-    ${preparationImage(preparation, "preparation-preview-image")}
-    <div>
-      <strong>${escapeHtml(preparation.name)}</strong>
-      ${preparation.dosage ? `<p class="preparation-preview-dosage">Дозировка: ${escapeHtml(preparation.dosage)}</p>` : ""}
-      <p>${escapeHtml(preparation.description || "Описание пока не добавлено")}</p>
-    </div>
-  ` : "";
+function renderWorkPreparationSelection(ids) {
+  const preparations = ids.map(getPreparation).filter(Boolean);
+  els.workPreparationPreview.classList.toggle("is-empty", preparations.length === 0);
+  els.workPreparationPreview.innerHTML = preparations.length
+    ? preparations.map((preparation) => `
+      <article class="preparation-selected" data-work-preparation-id="${escapeHtml(preparation.id)}">
+        ${preparationImage(preparation, "preparation-preview-image")}
+        <div>
+          <strong>${escapeHtml(preparation.name)}</strong>
+          ${preparation.dosage ? `<p class="preparation-preview-dosage">Дозировка: ${escapeHtml(preparation.dosage)}</p>` : ""}
+          <p>${escapeHtml(preparation.description || "Описание пока не добавлено")}</p>
+        </div>
+        <button class="icon-btn preparation-remove-btn" type="button" data-remove-work-preparation="${escapeHtml(preparation.id)}" title="Убрать препарат">
+          <i class="ti ti-x"></i>
+        </button>
+      </article>
+    `).join("")
+    : '<p class="muted">Препараты не выбраны</p>';
+}
+
+function updateWorkPreparationAddState() {
+  els.addWorkPreparationBtn.disabled = !els.workPreparationId.value;
+}
+
+function addWorkPreparationFromSelect() {
+  const preparationId = els.workPreparationId.value;
+  if (!preparationId) return;
+  renderWorkPreparationPicker([...getWorkPreparationIds(), preparationId]);
+}
+
+function removeWorkPreparation(event) {
+  const button = event.target.closest("[data-remove-work-preparation]");
+  if (!button) return;
+
+  renderWorkPreparationPicker(getWorkPreparationIds().filter((id) => id !== button.dataset.removeWorkPreparation));
+}
+
+function getWorkPreparationIds() {
+  return [...els.workPreparationPreview.querySelectorAll("[data-work-preparation-id]")]
+    .map((item) => item.dataset.workPreparationId)
+    .filter(Boolean);
 }
 
 function updateWorkIntervalDefault({ resetInterval = true } = {}) {
@@ -872,7 +918,7 @@ function saveWorkFromForm(event) {
   plant.tasks.push(normalizeTask({
     id: taskId,
     type: els.workType.value,
-    preparationId: els.workPreparationId.value,
+    preparationIds: getWorkPreparationIds(),
     nextDate: els.workNextDate.value,
     interval: Number(els.workInterval.value),
     repeat: els.workRepeat.value === "repeat",
@@ -1028,13 +1074,14 @@ function closeDialogOnBackdrop(event) {
   }
 }
 
-function preparationOptions(selectedId = "", emptyLabel = "Без препарата") {
-  const options = [`<option value="">${escapeHtml(emptyLabel)}</option>`];
+function preparationOptions(selectedIds = [], emptyLabel = "Без препарата") {
+  const selectedSet = new Set(Array.isArray(selectedIds) ? selectedIds : [selectedIds].filter(Boolean));
+  const options = emptyLabel === null ? [] : [`<option value="">${escapeHtml(emptyLabel)}</option>`];
   options.push(...(state.preparations || [])
     .slice()
     .sort((a, b) => a.name.localeCompare(b.name, "ru"))
     .map((preparation) => `
-      <option value="${escapeHtml(preparation.id)}" ${preparation.id === selectedId ? "selected" : ""}>
+      <option value="${escapeHtml(preparation.id)}" ${selectedSet.has(preparation.id) ? "selected" : ""}>
         ${escapeHtml(preparation.name)}
       </option>
     `));
@@ -1046,9 +1093,22 @@ function getPreparation(preparationId) {
   return state.preparations.find((preparation) => preparation.id === preparationId) || null;
 }
 
+function getPreparationIds(item = {}) {
+  const ids = Array.isArray(item.preparationIds) ? item.preparationIds : [item.preparationId];
+  return [...new Set(ids.map((id) => String(id || "").trim()).filter(Boolean))];
+}
+
+function getPreparations(item = {}) {
+  return getPreparationIds(item).map(getPreparation).filter(Boolean);
+}
+
 function preparationLogText(entry) {
-  const preparation = getPreparation(entry.preparationId);
-  return preparation ? ` · ${escapeHtml(preparation.name)}` : "";
+  const names = getPreparations(entry).map((preparation) => preparation.name).join(" + ");
+  return names ? ` · ${escapeHtml(names)}` : "";
+}
+
+function preparationsInline(preparations) {
+  return preparations.length ? `<div class="preparation-stack">${preparations.map(preparationInline).join("")}</div>` : "";
 }
 
 function preparationInline(preparation) {
@@ -1061,6 +1121,10 @@ function preparationInline(preparation) {
       </div>
     </div>
   `;
+}
+
+function selectedValues(select) {
+  return [...select.selectedOptions].map((option) => option.value).filter(Boolean);
 }
 
 function preparationImage(preparation, className) {
