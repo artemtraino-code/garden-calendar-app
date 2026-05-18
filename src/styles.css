@@ -338,6 +338,64 @@ h1 {
   gap: 7px;
 }
 
+.calendar-panel .reminder-list.compact {
+  max-height: min(68vh, 760px);
+  overflow-y: auto;
+  padding-right: 6px;
+  scrollbar-color: rgba(34, 122, 80, 0.42) rgba(255, 255, 255, 0.5);
+  scrollbar-width: thin;
+}
+
+.calendar-panel .reminder-list.compact::-webkit-scrollbar {
+  width: 8px;
+}
+
+.calendar-panel .reminder-list.compact::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 999px;
+}
+
+.calendar-panel .reminder-list.compact::-webkit-scrollbar-thumb {
+  background: rgba(34, 122, 80, 0.42);
+  border-radius: 999px;
+}
+
+.feed-section {
+  display: grid;
+  gap: 7px;
+}
+
+.feed-section + .feed-section {
+  margin-top: 12px;
+}
+
+.feed-section-title {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: rgba(251, 253, 248, 0.96);
+  color: var(--muted);
+  padding: 8px 10px;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.feed-section-title strong {
+  display: grid;
+  place-items: center;
+  min-width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: var(--green-soft);
+  color: var(--green-dark);
+}
+
 .reminder-card,
 .plant-card,
 .log-row,
@@ -373,6 +431,10 @@ h1 {
 .reminder-card.today-card {
   border-color: var(--blue-border);
   background: var(--blue-soft);
+}
+
+.history-card {
+  background: #fcfbf5;
 }
 
 .reminder-info h3 {
@@ -549,6 +611,12 @@ h1 {
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
+}
+
+.timeline-title {
+  color: var(--green-dark);
+  font-size: 16px;
+  font-weight: 850;
 }
 
 .title-filter-select {
@@ -810,9 +878,19 @@ h1 {
 }
 
 .preparation-card-head p,
+.preparation-purpose,
 .preparation-description {
   color: var(--muted);
   font-size: 12px;
+}
+
+.preparation-purpose {
+  margin-top: 6px;
+  line-height: 1.35;
+}
+
+.preparation-purpose strong {
+  color: var(--green-dark);
 }
 
 .preparation-description {
@@ -997,6 +1075,10 @@ h1 {
   background: var(--surface-strong);
   border-color: var(--surface-strong);
   color: #fff;
+}
+
+.history-status .action-pill {
+  cursor: default;
 }
 
 .action-planned {

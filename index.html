@@ -27,13 +27,7 @@
           <section class="panel calendar-panel">
             <div class="panel-head timeline-head">
               <div class="timeline-title-filters">
-                <select id="timeline-range-select" class="title-filter-select" aria-label="Период работ">
-                  <option value="nearest">Ближайшие дни</option>
-                  <option value="three">3 дня</option>
-                  <option value="week">Неделя</option>
-                  <option value="month">Месяц</option>
-                  <option value="quarter">3 месяца</option>
-                </select>
+                <span class="timeline-title">Лента работ</span>
               </div>
               <div class="dashboard-actions dashboard-action-strip">
                 <button id="quick-add-plant-btn" class="primary-btn" type="button"><i class="ti ti-plus"></i> Посадка</button>
@@ -41,11 +35,11 @@
               </div>
             </div>
             <div class="week-carousel" aria-label="Выбор даты">
-              <button id="week-prev-btn" class="week-arrow" type="button" title="Предыдущие даты">
+              <button id="week-prev-btn" class="week-arrow" type="button" title="Предыдущий день">
                 <i class="ti ti-chevron-left"></i>
               </button>
               <div id="week-strip" class="week-strip"></div>
-              <button id="week-next-btn" class="week-arrow" type="button" title="Следующие даты">
+              <button id="week-next-btn" class="week-arrow" type="button" title="Следующий день">
                 <i class="ti ti-chevron-right"></i>
               </button>
             </div>
@@ -53,7 +47,7 @@
             <div id="upcoming-list" class="reminder-list compact"></div>
           </section>
 
-          <section class="work-panel">
+          <section class="work-panel is-hidden">
             <div class="panel-head">
               <div>
                 <span id="work-panel-eyebrow" class="eyebrow">Приоритет</span>
@@ -63,7 +57,7 @@
             <div id="urgent-list" class="reminder-list"></div>
           </section>
 
-          <aside class="side-stack">
+          <aside class="side-stack is-hidden">
             <section class="panel">
               <div class="panel-head">
                 <div>
@@ -206,11 +200,16 @@
           <label class="field">
             <span>Следующее повторение</span>
             <select id="done-mode">
-              <option value="repeat">Повторить</option>
               <option value="stop">Не повторять</option>
+              <option value="again">Повторить через</option>
+              <option value="repeat">Повторять каждые</option>
             </select>
           </label>
-          <label class="field">
+          <label id="done-repeat-date-field" class="field is-hidden">
+            <span>Дата повторения</span>
+            <input id="done-repeat-date" type="date">
+          </label>
+          <label id="done-interval-field" class="field">
             <span>Интервал, дней</span>
             <input id="done-interval" type="number" min="1" max="365" required>
           </label>
@@ -311,10 +310,15 @@
             <span>Режим</span>
             <select id="work-repeat">
               <option value="once">Не повторять</option>
-              <option value="repeat">Повторять</option>
+              <option value="again">Повторить через</option>
+              <option value="repeat">Повторять каждые</option>
             </select>
           </label>
-          <label class="field">
+          <label id="work-repeat-date-field" class="field is-hidden">
+            <span>Дата повторения</span>
+            <input id="work-repeat-date" type="date">
+          </label>
+          <label id="work-interval-field" class="field">
             <span>Повторять каждые, дней</span>
             <input id="work-interval" type="number" min="1" max="365" required>
           </label>

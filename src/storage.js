@@ -1,8 +1,8 @@
 import { normalizePlant, normalizePreparation } from "./calendar.js";
 import { sampleLog, samplePlants, samplePreparations } from "./sample-data.js";
 
-const STORAGE_KEY = "garden-calendar-state-v10";
-const LEGACY_KEYS = ["garden-calendar-state-v9", "garden-calendar-state-v8", "garden-calendar-state-v7", "garden-calendar-state-v6", "garden-calendar-state-v5", "garden-calendar-state-v4", "garden-calendar-state-v3", "garden-calendar-state-v2", "garden-calendar-state-v1"];
+const STORAGE_KEY = "garden-calendar-state-v11";
+const LEGACY_KEYS = ["garden-calendar-state-v10", "garden-calendar-state-v9", "garden-calendar-state-v8", "garden-calendar-state-v7", "garden-calendar-state-v6", "garden-calendar-state-v5", "garden-calendar-state-v4", "garden-calendar-state-v3", "garden-calendar-state-v2", "garden-calendar-state-v1"];
 const memoryStorage = new Map();
 
 export function loadState() {

@@ -113,8 +113,13 @@ export function getAllTasks(plants, baseIso = todayIso()) {
   );
 }
 
-export function completeTask({ plant, task, doneDate, note, interval, repeat }) {
-  const nextScheduled = repeat ? addDays(doneDate, interval) : "";
+export function completeTask({ plant, task, doneDate, note, interval, repeat, repeatMode, repeatDate }) {
+  const mode = repeatMode || (repeat ? "repeat" : "stop");
+  const nextScheduled = mode === "repeat"
+    ? addDays(doneDate, interval)
+    : mode === "again"
+      ? repeatDate || task.repeatDate || ""
+      : "";
   const preparationIds = normalizePreparationIds(task);
   const logEntry = {
     id: makeId("log"),
@@ -128,9 +133,17 @@ export function completeTask({ plant, task, doneDate, note, interval, repeat }) 
     nextScheduled,
   };
 
-  if (repeat) {
+  if (mode === "repeat") {
     task.nextDate = nextScheduled;
     task.interval = Number(interval);
+    task.repeat = true;
+    task.repeatMode = "repeat";
+    task.repeatDate = "";
+  } else if (mode === "again" && nextScheduled) {
+    task.nextDate = nextScheduled;
+    task.repeat = false;
+    task.repeatMode = "once";
+    task.repeatDate = "";
   } else {
     plant.tasks = plant.tasks.filter((item) => item.id !== task.id);
   }
@@ -141,6 +154,7 @@ export function completeTask({ plant, task, doneDate, note, interval, repeat }) 
 export function normalizeTask(task, plantType = "other") {
   const type = task.type || "water";
   const preparationIds = normalizePreparationIds(task);
+  const repeatMode = normalizeRepeatMode(task);
   return {
     id: task.id || makeId("task"),
     type,
@@ -148,7 +162,9 @@ export function normalizeTask(task, plantType = "other") {
     preparationIds,
     nextDate: task.nextDate || todayIso(),
     interval: Number(task.interval || DEFAULT_INTERVALS[type]?.[plantType] || 14),
-    repeat: task.repeat !== false,
+    repeat: repeatMode === "repeat",
+    repeatMode,
+    repeatDate: task.repeatDate || "",
     notes: task.notes?.trim() || "",
   };
 }
@@ -180,4 +196,9 @@ export function normalizePreparation(preparation) {
 function normalizePreparationIds(task) {
   const ids = Array.isArray(task?.preparationIds) ? task.preparationIds : [task?.preparationId];
   return [...new Set(ids.map((id) => String(id || "").trim()).filter(Boolean))];
+}
+
+function normalizeRepeatMode(task) {
+  if (["once", "again", "repeat"].includes(task?.repeatMode)) return task.repeatMode;
+  return task?.repeat === false ? "once" : "repeat";
 }
