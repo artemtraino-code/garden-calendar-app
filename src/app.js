@@ -390,6 +390,7 @@ function plantCard(plant) {
       </div>
       <div class="plant-actions">
         <button class="action-pill action-edit" type="button" data-action="edit-plant" data-plant-id="${plant.id}"><i class="ti ti-pencil"></i> Настроить</button>
+        <button class="action-pill action-delete" type="button" data-action="delete-plant" data-plant-id="${plant.id}"><i class="ti ti-trash"></i> Удалить</button>
       </div>
     </article>
   `;
@@ -494,6 +495,19 @@ function onPlantGridClick(event) {
   if (button.dataset.action === "edit-plant") {
     openPlantDialog(plant);
   }
+
+  if (button.dataset.action === "delete-plant") {
+    deletePlant(plant);
+  }
+}
+
+function deletePlant(plant) {
+  const confirmed = confirm(`Удалить объект "${plant.name}"? Будущие работы и записи журнала по нему тоже будут удалены.`);
+  if (!confirmed) return;
+
+  state.plants = state.plants.filter((item) => item.id !== plant.id);
+  state.log = state.log.filter((entry) => entry.plantId !== plant.id && entry.plantName !== plant.name);
+  persistAndRender();
 }
 
 function openPlantDialog(plant = null) {

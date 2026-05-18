@@ -876,7 +876,7 @@ h1 {
 }
 
 .plant-actions {
-  justify-content: flex-start;
+  justify-content: flex-end;
   flex-wrap: wrap;
   margin-top: 13px;
 }
