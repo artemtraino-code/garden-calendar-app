@@ -193,11 +193,14 @@ function renderToday() {
   renderQuickPlan(tasks);
   renderMiniLog();
   renderDashboardControls();
+  if (!selectedTimelineDate) {
+    requestAnimationFrame(scrollFeedToLatestDone);
+  }
 }
 
 function renderUnifiedFeed(tasks) {
   const history = [...state.log]
-    .sort((a, b) => b.doneDate.localeCompare(a.doneDate) || b.id.localeCompare(a.id));
+    .sort((a, b) => a.doneDate.localeCompare(b.doneDate) || a.id.localeCompare(b.id));
   const planned = tasks
     .sort((a, b) => a.task.nextDate.localeCompare(b.task.nextDate) || a.plant.name.localeCompare(b.plant.name, "uk"));
 
@@ -207,7 +210,7 @@ function renderUnifiedFeed(tasks) {
         <span>Выполнено</span>
         <strong>${history.length}</strong>
       </div>
-      ${history.length ? history.map(historyFeedCard).join("") : emptyState("Выполненных работ пока нет")}
+      ${history.length ? history.map((entry, index) => historyFeedCard(entry, { isLatest: index === history.length - 1 })).join("") : emptyState("Выполненных работ пока нет")}
     </div>
     <div class="feed-section" data-feed-section="planned">
       <div class="feed-section-title">
@@ -352,11 +355,11 @@ function timelineCard(item) {
   `;
 }
 
-function historyFeedCard(entry) {
+function historyFeedCard(entry, options = {}) {
   const preparations = getPreparations(entry);
   const preparationText = preparations.map((preparation) => preparation.name).join(" + ");
   return `
-    <article class="reminder-card timeline-card history-card" data-feed-date="${escapeHtml(entry.doneDate)}">
+    <article class="reminder-card timeline-card history-card" data-feed-date="${escapeHtml(entry.doneDate)}" ${options.isLatest ? 'data-feed-anchor="latest-done"' : ""}>
       <div class="task-icon task-${entry.taskType}"><i class="ti ${TASK_ICONS[entry.taskType] || "ti-history"}"></i></div>
       <div class="reminder-info">
         <h3>${escapeHtml(formatDate(entry.doneDate))}</h3>
@@ -403,6 +406,17 @@ function scrollFeedToDate(isoDate) {
   const target = feed.querySelector(`[data-feed-date="${CSS.escape(isoDate)}"]`);
   if (!target) return;
   target.scrollIntoView({ block: "nearest", behavior: "smooth" });
+}
+
+function scrollFeedToLatestDone() {
+  const feed = els.upcomingList;
+  const target = feed.querySelector('[data-feed-anchor="latest-done"]');
+  if (!target) {
+    feed.scrollTop = 0;
+    return;
+  }
+
+  feed.scrollTop = Math.max(0, target.offsetTop - feed.offsetTop - 8);
 }
 
 function renderWeekStrip(tasks) {
