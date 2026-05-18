@@ -1180,6 +1180,91 @@ h1 {
   resize: vertical;
 }
 
+textarea.work-notes-field {
+  min-height: 112px;
+}
+
+.date-picker-field {
+  min-height: 44px;
+  font-size: 16px;
+  font-weight: 760;
+}
+
+.postpone-calendar {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfdf8;
+  padding: 10px;
+}
+
+.postpone-calendar-head {
+  display: grid;
+  grid-template-columns: 36px 1fr 36px;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.postpone-calendar-head strong {
+  color: var(--ink);
+  font-size: 14px;
+  text-align: center;
+}
+
+.postpone-weekdays,
+.postpone-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.postpone-weekdays {
+  margin-bottom: 6px;
+}
+
+.postpone-weekdays span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.postpone-calendar-day {
+  display: grid;
+  place-items: center;
+  min-height: 34px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 760;
+}
+
+button.postpone-calendar-day {
+  cursor: pointer;
+}
+
+button.postpone-calendar-day:hover {
+  border-color: rgba(78, 122, 52, 0.22);
+  background: #eef6e7;
+}
+
+.postpone-calendar-day.is-today {
+  border-color: rgba(78, 122, 52, 0.35);
+}
+
+.postpone-calendar-day.is-selected {
+  border-color: #4e7a34;
+  background: #4e7a34;
+  color: #fff;
+}
+
+.postpone-calendar-day.is-empty {
+  pointer-events: none;
+}
+
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

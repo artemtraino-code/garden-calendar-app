@@ -22,6 +22,7 @@ let dashboardView = "timeline";
 let timelineRange = "nearest";
 let selectedTimelineDate = "";
 let calendarStartDate = todayIso();
+let postponeCalendarMonth = todayIso().slice(0, 7) + "-01";
 
 const TIMELINE_RANGES = {
   nearest: { label: "Ближайшие дни", days: null },
@@ -61,6 +62,16 @@ const els = {
   doneMode: document.querySelector("#done-mode"),
   doneInterval: document.querySelector("#done-interval"),
   postponeTaskBtn: document.querySelector("#postpone-task-btn"),
+  postponeDialog: document.querySelector("#postpone-dialog"),
+  postponeForm: document.querySelector("#postpone-form"),
+  postponeDialogTitle: document.querySelector("#postpone-dialog-title"),
+  postponePlantId: document.querySelector("#postpone-plant-id"),
+  postponeTaskId: document.querySelector("#postpone-task-id"),
+  postponeDate: document.querySelector("#postpone-date"),
+  postponeCalendarGrid: document.querySelector("#postpone-calendar-grid"),
+  postponeMonthLabel: document.querySelector("#postpone-month-label"),
+  postponePrevMonthBtn: document.querySelector("#postpone-prev-month"),
+  postponeNextMonthBtn: document.querySelector("#postpone-next-month"),
   workDialog: document.querySelector("#work-dialog"),
   workForm: document.querySelector("#work-form"),
   workDialogTitle: document.querySelector("#work-dialog-title"),
@@ -116,7 +127,12 @@ function bindEvents() {
   els.plantForm.addEventListener("submit", savePlantFromForm);
   els.doneForm.addEventListener("submit", saveDoneFromForm);
   els.doneMode.addEventListener("change", updateDoneModeFields);
-  els.postponeTaskBtn.addEventListener("click", postponeTaskFromDoneDialog);
+  els.postponeTaskBtn.addEventListener("click", openPostponeDialogFromDoneDialog);
+  els.postponeForm.addEventListener("submit", savePostponeFromForm);
+  els.postponeDate.addEventListener("change", syncPostponeCalendarFromInput);
+  els.postponeCalendarGrid.addEventListener("click", onPostponeCalendarClick);
+  els.postponePrevMonthBtn.addEventListener("click", () => shiftPostponeMonth(-1));
+  els.postponeNextMonthBtn.addEventListener("click", () => shiftPostponeMonth(1));
   els.workForm.addEventListener("submit", saveWorkFromForm);
   els.workPlantId.addEventListener("change", () => updateWorkIntervalDefault());
   els.workType.addEventListener("change", () => updateWorkIntervalDefault());
@@ -130,6 +146,7 @@ function bindEvents() {
 
   els.plantDialog.addEventListener("click", closeDialogOnBackdrop);
   els.doneDialog.addEventListener("click", closeDialogOnBackdrop);
+  els.postponeDialog.addEventListener("click", closeDialogOnBackdrop);
   els.workDialog.addEventListener("click", closeDialogOnBackdrop);
   els.preparationDialog.addEventListener("click", closeDialogOnBackdrop);
 
@@ -887,14 +904,89 @@ function saveDoneFromForm(event) {
   persistAndRender();
 }
 
-function postponeTaskFromDoneDialog() {
+function openPostponeDialogFromDoneDialog() {
   const plant = state.plants.find((item) => item.id === document.querySelector("#done-plant-id").value);
   const task = plant?.tasks.find((item) => item.id === document.querySelector("#done-task-id").value);
   if (!plant || !task) return;
 
-  task.nextDate = addCalendarDays(task.nextDate || todayIso(), 1);
+  els.postponeForm.reset();
+  els.postponePlantId.value = plant.id;
+  els.postponeTaskId.value = task.id;
+  els.postponeDate.value = task.nextDate || todayIso();
+  postponeCalendarMonth = getMonthStart(els.postponeDate.value);
+  renderPostponeCalendar();
+  els.postponeDialogTitle.textContent = `Перенести: ${TASK_LABELS[task.type] || task.type} - ${plant.name}`;
   els.doneDialog.close();
+  els.postponeDialog.showModal();
+}
+
+function savePostponeFromForm(event) {
+  event.preventDefault();
+  const plant = state.plants.find((item) => item.id === els.postponePlantId.value);
+  const task = plant?.tasks.find((item) => item.id === els.postponeTaskId.value);
+  if (!plant || !task) return;
+
+  task.nextDate = els.postponeDate.value;
+  els.postponeDialog.close();
   persistAndRender();
+}
+
+function syncPostponeCalendarFromInput() {
+  postponeCalendarMonth = getMonthStart(els.postponeDate.value || todayIso());
+  renderPostponeCalendar();
+}
+
+function shiftPostponeMonth(delta) {
+  postponeCalendarMonth = addCalendarMonths(postponeCalendarMonth, delta);
+  renderPostponeCalendar();
+}
+
+function onPostponeCalendarClick(event) {
+  const button = event.target.closest("[data-postpone-date]");
+  if (!button) return;
+
+  els.postponeDate.value = button.dataset.postponeDate;
+  postponeCalendarMonth = getMonthStart(els.postponeDate.value);
+  renderPostponeCalendar();
+}
+
+function renderPostponeCalendar() {
+  const selectedDate = els.postponeDate.value || todayIso();
+  postponeCalendarMonth = getMonthStart(postponeCalendarMonth || selectedDate);
+  const [year, month] = postponeCalendarMonth.split("-").map(Number);
+  const monthStart = new Date(year, month - 1, 1);
+  const firstWeekday = (monthStart.getDay() + 6) % 7;
+  const daysInMonth = new Date(year, month, 0).getDate();
+  const monthLabel = new Intl.DateTimeFormat("ru", { month: "long", year: "numeric" }).format(monthStart);
+  const today = todayIso();
+  const cells = [];
+
+  els.postponeMonthLabel.textContent = monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1);
+
+  for (let day = 0; day < firstWeekday; day += 1) {
+    cells.push('<span class="postpone-calendar-day is-empty"></span>');
+  }
+
+  for (let day = 1; day <= daysInMonth; day += 1) {
+    const isoDate = makeIsoDate(year, month, day);
+    const classes = [
+      "postpone-calendar-day",
+      isoDate === selectedDate ? "is-selected" : "",
+      isoDate === today ? "is-today" : "",
+    ].filter(Boolean).join(" ");
+    cells.push(`
+      <button class="${classes}" type="button" data-postpone-date="${isoDate}">
+        ${day}
+      </button>
+    `);
+  }
+
+  const tailCells = (7 - (cells.length % 7)) % 7;
+  for (let day = 0; day < tailCells; day += 1) {
+    cells.push('<span class="postpone-calendar-day is-empty"></span>');
+  }
+
+  els.postponeCalendarGrid.innerHTML = cells.join("");
 }
 
 function clearLog() {
@@ -909,6 +1001,21 @@ function addCalendarDays(isoDate, days) {
   const date = new Date(year, month - 1, day);
   date.setDate(date.getDate() + Number(days || 0));
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
+function addCalendarMonths(isoDate, months) {
+  const [year, month] = getMonthStart(isoDate).split("-").map(Number);
+  const date = new Date(year, month - 1 + Number(months || 0), 1);
+  return makeIsoDate(date.getFullYear(), date.getMonth() + 1, 1);
+}
+
+function getMonthStart(isoDate) {
+  const [year, month] = (isoDate || todayIso()).split("-").map(Number);
+  return makeIsoDate(year, month || 1, 1);
+}
+
+function makeIsoDate(year, month, day) {
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
 
 function closeDialog(id) {

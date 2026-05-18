@@ -218,8 +218,54 @@
 
         <div class="modal-actions">
           <button class="soft-btn" type="button" data-close-dialog="done-dialog">Отмена</button>
-          <button id="postpone-task-btn" class="soft-btn action-postpone-btn" type="button"><i class="ti ti-chevron-right"></i> Перенести на день</button>
+          <button id="postpone-task-btn" class="soft-btn action-postpone-btn" type="button"><i class="ti ti-calendar"></i> Перенести</button>
           <button class="primary-btn" type="submit">Сделано</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="postpone-dialog" class="modal">
+      <form id="postpone-form" method="dialog">
+        <div class="modal-head">
+          <h3 id="postpone-dialog-title">Перенести работу</h3>
+          <button class="icon-btn" type="button" data-close-dialog="postpone-dialog" title="Закрыть">
+            <i class="ti ti-x"></i>
+          </button>
+        </div>
+
+        <input id="postpone-plant-id" type="hidden">
+        <input id="postpone-task-id" type="hidden">
+
+        <label class="field">
+          <span>Новая дата</span>
+          <input id="postpone-date" class="date-picker-field" type="date" required>
+        </label>
+
+        <div class="postpone-calendar">
+          <div class="postpone-calendar-head">
+            <button id="postpone-prev-month" class="icon-btn" type="button" title="Предыдущий месяц">
+              <i class="ti ti-chevron-left"></i>
+            </button>
+            <strong id="postpone-month-label"></strong>
+            <button id="postpone-next-month" class="icon-btn" type="button" title="Следующий месяц">
+              <i class="ti ti-chevron-right"></i>
+            </button>
+          </div>
+          <div class="postpone-weekdays" aria-hidden="true">
+            <span>Пн</span>
+            <span>Вт</span>
+            <span>Ср</span>
+            <span>Чт</span>
+            <span>Пт</span>
+            <span>Сб</span>
+            <span>Вс</span>
+          </div>
+          <div id="postpone-calendar-grid" class="postpone-calendar-grid"></div>
+        </div>
+
+        <div class="modal-actions">
+          <button class="soft-btn" type="button" data-close-dialog="postpone-dialog">Отмена</button>
+          <button class="primary-btn" type="submit">Перенести</button>
         </div>
       </form>
     </dialog>
@@ -264,7 +310,7 @@
           <label class="field">
             <span>Режим</span>
             <select id="work-repeat">
-              <option value="once">Разовая работа</option>
+              <option value="once">Не повторять</option>
               <option value="repeat">Повторять</option>
             </select>
           </label>
@@ -280,12 +326,10 @@
         </label>
         <div id="work-preparation-preview" class="preparation-preview is-hidden"></div>
 
-        <div class="form-grid">
-          <label class="field">
-            <span>Заметка</span>
-            <input id="work-notes" type="text" placeholder="Например: после дождя не поливать">
-          </label>
-        </div>
+        <label class="field">
+          <span>Заметка</span>
+          <textarea id="work-notes" class="work-notes-field" placeholder="Например: после дождя не поливать"></textarea>
+        </label>
 
         <div class="modal-actions">
           <button class="soft-btn" type="button" data-close-dialog="work-dialog">Отмена</button>
