@@ -58,6 +58,9 @@ const els = {
   doneDialog: document.querySelector("#done-dialog"),
   doneForm: document.querySelector("#done-form"),
   doneDialogTitle: document.querySelector("#done-dialog-title"),
+  doneMode: document.querySelector("#done-mode"),
+  doneInterval: document.querySelector("#done-interval"),
+  postponeTaskBtn: document.querySelector("#postpone-task-btn"),
   workDialog: document.querySelector("#work-dialog"),
   workForm: document.querySelector("#work-form"),
   workDialogTitle: document.querySelector("#work-dialog-title"),
@@ -112,6 +115,8 @@ function bindEvents() {
   els.logSearch.addEventListener("input", renderLog);
   els.plantForm.addEventListener("submit", savePlantFromForm);
   els.doneForm.addEventListener("submit", saveDoneFromForm);
+  els.doneMode.addEventListener("change", updateDoneModeFields);
+  els.postponeTaskBtn.addEventListener("click", postponeTaskFromDoneDialog);
   els.workForm.addEventListener("submit", saveWorkFromForm);
   els.workPlantId.addEventListener("change", () => updateWorkIntervalDefault());
   els.workType.addEventListener("change", () => updateWorkIntervalDefault());
@@ -754,10 +759,15 @@ function openDoneDialog(plant, task) {
   document.querySelector("#done-task-id").value = task.id;
   document.querySelector("#done-date").value = todayIso();
   document.querySelector("#done-note").value = task.notes || "";
-  document.querySelector("#done-mode").value = task.repeat === false ? "stop" : "repeat";
-  document.querySelector("#done-interval").value = task.interval;
+  els.doneMode.value = task.repeat === false ? "stop" : "repeat";
+  els.doneInterval.value = task.interval;
+  updateDoneModeFields();
   els.doneDialogTitle.textContent = `Сделано: ${TASK_LABELS[task.type] || task.type} - ${plant.name}`;
   els.doneDialog.showModal();
+}
+
+function updateDoneModeFields() {
+  els.doneInterval.disabled = els.doneMode.value !== "repeat";
 }
 
 function openWorkDialog(options = {}) {
@@ -873,6 +883,16 @@ function saveDoneFromForm(event) {
   });
 
   state.log.push(logEntry);
+  els.doneDialog.close();
+  persistAndRender();
+}
+
+function postponeTaskFromDoneDialog() {
+  const plant = state.plants.find((item) => item.id === document.querySelector("#done-plant-id").value);
+  const task = plant?.tasks.find((item) => item.id === document.querySelector("#done-task-id").value);
+  if (!plant || !task) return;
+
+  task.nextDate = addCalendarDays(task.nextDate || todayIso(), 1);
   els.doneDialog.close();
   persistAndRender();
 }

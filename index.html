@@ -218,6 +218,7 @@
 
         <div class="modal-actions">
           <button class="soft-btn" type="button" data-close-dialog="done-dialog">Отмена</button>
+          <button id="postpone-task-btn" class="soft-btn action-postpone-btn" type="button"><i class="ti ti-chevron-right"></i> Перенести на день</button>
           <button class="primary-btn" type="submit">Сделано</button>
         </div>
       </form>
@@ -261,15 +262,15 @@
 
         <div class="form-grid">
           <label class="field">
-            <span>Повторять каждые, дней</span>
-            <input id="work-interval" type="number" min="1" max="365" required>
-          </label>
-          <label class="field">
             <span>Режим</span>
             <select id="work-repeat">
               <option value="once">Разовая работа</option>
               <option value="repeat">Повторять</option>
             </select>
+          </label>
+          <label class="field">
+            <span>Повторять каждые, дней</span>
+            <input id="work-interval" type="number" min="1" max="365" required>
           </label>
         </div>
 
