@@ -2,7 +2,6 @@ import {
   DEFAULT_INTERVALS,
   PLANT_TYPE_LABELS,
   PREPARATION_CATEGORY_LABELS,
-  TASK_ICONS,
   TASK_LABELS,
   completeTask,
   formatDate,
@@ -21,7 +20,6 @@ state.workTypes ||= [];
 let activeTab = "today";
 let dashboardView = "timeline";
 let selectedTimelineDate = "";
-let feedStatusFilter = "all";
 let calendarStartDate = todayIso();
 let postponeCalendarMonth = todayIso().slice(0, 7) + "-01";
 
@@ -101,6 +99,7 @@ const els = {
   workDialogTitle: document.querySelector("#work-dialog-title"),
   workTaskId: document.querySelector("#work-task-id"),
   workPlantId: document.querySelector("#work-plant-id"),
+  workStatus: document.querySelector("#work-status"),
   workType: document.querySelector("#work-type"),
   workNextDate: document.querySelector("#work-next-date"),
   workRepeatDateField: document.querySelector("#work-repeat-date-field"),
@@ -159,8 +158,8 @@ function bindEvents() {
   els.weekPrevBtn.addEventListener("click", () => shiftCalendarRange(-1));
   els.weekNextBtn.addEventListener("click", () => shiftCalendarRange(1));
   els.timelineCounters.addEventListener("click", (event) => {
-    const button = event.target.closest("[data-feed-filter]");
-    if (button) setFeedStatusFilter(button.dataset.feedFilter);
+    const button = event.target.closest("[data-feed-scroll]");
+    if (button) scrollFeedToSection(button.dataset.feedScroll);
   });
 
   els.logSearch.addEventListener("input", renderLog);
@@ -234,7 +233,6 @@ function openDashboardToday() {
   const today = todayIso();
   calendarStartDate = today;
   selectedTimelineDate = "";
-  feedStatusFilter = "all";
   switchTab("today");
   requestAnimationFrame(() => scrollFeedToDate(today));
 }
@@ -252,12 +250,10 @@ function persistAndRender() {
 function renderToday() {
   const tasks = getAllTasks(state.plants).sort((a, b) => a.diff - b.diff || a.plant.name.localeCompare(b.plant.name, "uk"));
   const allFeedGroups = getFeedGroups(tasks, { applyDate: false });
-  const visibleFeedGroups = feedStatusFilter === "all" ? getFeedGroups(tasks) : allFeedGroups;
+  const visibleFeedGroups = getFeedGroups(tasks);
   els.calendarPanel.classList.remove("is-hidden");
   els.workPanel.classList.add("is-hidden");
-  els.timelineLabel.textContent = selectedTimelineDate
-    ? `Выбрана дата: ${formatDate(selectedTimelineDate)}`
-    : "Сверху выполненные работы, ниже весь план вперед";
+  els.timelineLabel.textContent = selectedTimelineDate ? formatDate(selectedTimelineDate) : "";
   renderTimelineCounters(allFeedGroups);
   els.upcomingList.innerHTML = renderUnifiedFeed(visibleFeedGroups);
   renderWeekStrip(tasks);
@@ -280,18 +276,6 @@ function getFeedGroups(tasks, options = {}) {
 }
 
 function renderUnifiedFeed({ history, planned }) {
-  if (feedStatusFilter === "done") {
-    return history.length
-      ? `<div class="feed-section" data-feed-section="history">${history.map((entry, index) => historyFeedCard(entry, { isLatest: index === history.length - 1 })).join("")}</div>`
-      : emptyState(selectedTimelineDate ? "На выбранную дату выполненных работ нет" : "Выполненных работ пока нет");
-  }
-
-  if (feedStatusFilter === "planned") {
-    return planned.length
-      ? `<div class="feed-section" data-feed-section="planned">${planned.map(timelineCard).join("")}</div>`
-      : emptyState(selectedTimelineDate ? "На выбранную дату запланированных работ нет" : "Запланированных работ нет");
-  }
-
   if (!history.length && !planned.length) {
     return emptyState(selectedTimelineDate ? "На выбранную дату работ нет" : "Работ в ленте пока нет");
   }
@@ -308,12 +292,12 @@ function renderTimelineCounters({ history, planned }) {
   }
 
   els.timelineCounters.innerHTML = `
-    <button class="timeline-counter timeline-counter-done ${feedStatusFilter === "done" ? "is-active" : ""}" type="button" data-feed-filter="done" aria-pressed="${feedStatusFilter === "done"}">
+    <button class="timeline-counter timeline-counter-done" type="button" data-feed-scroll="history">
       <i class="ti ti-check"></i>
       <span>Выполнено</span>
       <strong>${history.length}</strong>
     </button>
-    <button class="timeline-counter timeline-counter-planned ${feedStatusFilter === "planned" ? "is-active" : ""}" type="button" data-feed-filter="planned" aria-pressed="${feedStatusFilter === "planned"}">
+    <button class="timeline-counter timeline-counter-planned" type="button" data-feed-scroll="planned">
       <i class="ti ti-calendar-event"></i>
       <span>Запланировано</span>
       <strong>${planned.length}</strong>
@@ -321,14 +305,7 @@ function renderTimelineCounters({ history, planned }) {
   `;
 }
 
-function setFeedStatusFilter(filter) {
-  feedStatusFilter = feedStatusFilter === filter ? "all" : filter;
-  selectedTimelineDate = "";
-  renderToday();
-}
-
 function setTimelineDate(isoDate, options = {}) {
-  feedStatusFilter = "all";
   selectedTimelineDate = isoDate || "";
   renderToday();
   if (options.scroll && selectedTimelineDate) {
@@ -428,8 +405,8 @@ function reminderCard(item, compact = false) {
         ${preparationsInline(preparations)}
       </div>
       <div class="card-actions">
-        <button class="action-pill action-edit" type="button" data-action="edit-task" data-plant-id="${item.plant.id}" data-task-id="${item.task.id}">
-          <i class="ti ti-pencil"></i> Редактировать
+        <button class="icon-btn feed-edit-btn" type="button" data-action="edit-task" data-plant-id="${item.plant.id}" data-task-id="${item.task.id}" title="Редактировать">
+          <i class="ti ti-settings"></i>
         </button>
         ${completionButton(item)}
       </div>
@@ -447,13 +424,13 @@ function timelineCard(item) {
     <article class="reminder-card timeline-card ${statusClass}" data-feed-date="${escapeHtml(item.task.nextDate)}">
       <div class="task-icon task-${item.task.type}">${iconImage(workIcon(item.task.type), "task-color-icon")}</div>
       <div class="reminder-info">
-        <h3>${escapeHtml(timelineDateTitle(item))}</h3>
-        <p><strong>${escapeHtml(workTitle)}</strong> · ${escapeHtml(repeatText)}${item.task.notes ? ` · ${escapeHtml(item.task.notes)}` : ""}</p>
+        <h3>${escapeHtml(`${timelineDateTitle(item)} · ${workTitle}`)}</h3>
+        <p>${escapeHtml(repeatText)}${item.task.notes ? ` · ${escapeHtml(item.task.notes)}` : ""}</p>
         ${preparationsInline(preparations)}
       </div>
       <div class="card-actions">
-        <button class="action-pill action-edit" type="button" data-action="edit-task" data-plant-id="${item.plant.id}" data-task-id="${item.task.id}">
-          <i class="ti ti-pencil"></i> Редактировать
+        <button class="icon-btn feed-edit-btn" type="button" data-action="edit-task" data-plant-id="${item.plant.id}" data-task-id="${item.task.id}" title="Редактировать">
+          <i class="ti ti-settings"></i>
         </button>
         ${completionButton(item)}
       </div>
@@ -464,12 +441,13 @@ function timelineCard(item) {
 function historyFeedCard(entry, options = {}) {
   const preparations = getPreparations(entry);
   const preparationText = preparations.map((preparation) => preparation.name).join(" + ");
+  const details = [preparationText, entry.note].filter(Boolean).join(" · ");
   return `
     <article class="reminder-card timeline-card history-card" data-feed-date="${escapeHtml(entry.doneDate)}" ${options.isLatest ? 'data-feed-anchor="latest-done"' : ""}>
       <div class="task-icon task-${entry.taskType}">${iconImage(workIcon(entry.taskType), "task-color-icon")}</div>
       <div class="reminder-info">
-        <h3>${escapeHtml(formatDate(entry.doneDate))}</h3>
-        <p><strong>${escapeHtml(workLabel(entry.taskType))} - ${escapeHtml(entry.plantName)}</strong>${preparationText ? ` · ${escapeHtml(preparationText)}` : ""}${entry.note ? ` · ${escapeHtml(entry.note)}` : ""}</p>
+        <h3>${escapeHtml(`${formatDate(entry.doneDate)} · ${workLabel(entry.taskType)} - ${entry.plantName}`)}</h3>
+        ${details ? `<p>${escapeHtml(details)}</p>` : ""}
         ${preparationsInline(preparations)}
       </div>
       <div class="card-actions history-status">
@@ -480,17 +458,7 @@ function historyFeedCard(entry, options = {}) {
 }
 
 function completionButton(item) {
-  const isPlanned = item.diff > 0;
-  const className = isPlanned ? "action-planned" : "action-done";
-  const icon = isPlanned ? "ti-calendar" : "ti-check";
-  const label = isPlanned ? "Запланировано" : "Сделано";
-  const title = isPlanned ? "Нажмите, когда работа выполнена" : "Отметить работу выполненной";
-
-  return `
-    <button class="action-pill ${className}" type="button" title="${escapeHtml(title)}" data-action="done" data-plant-id="${item.plant.id}" data-task-id="${item.task.id}">
-      <i class="ti ${icon}"></i> ${escapeHtml(label)}
-    </button>
-  `;
+  return `<span class="action-pill action-planned action-status"><i class="ti ti-calendar"></i> Запланировано</span>`;
 }
 
 function timelineDateTitle(item) {
@@ -517,6 +485,13 @@ function scrollFeedToDate(isoDate) {
   feed.scrollTop = Math.max(0, target.offsetTop - feed.offsetTop - 8);
 }
 
+function scrollFeedToSection(section) {
+  const feed = els.upcomingList;
+  const target = feed.querySelector(`[data-feed-section="${CSS.escape(section)}"]`);
+  if (!target) return;
+  feed.scrollTop = Math.max(0, target.offsetTop - feed.offsetTop - 8);
+}
+
 function scrollFeedToLatestDone() {
   const feed = els.upcomingList;
   const target = feed.querySelector('[data-feed-anchor="latest-done"]');
@@ -531,11 +506,6 @@ function scrollFeedToLatestDone() {
 function positionFeedAfterRender() {
   if (selectedTimelineDate) {
     scrollFeedToDate(selectedTimelineDate);
-    return;
-  }
-
-  if (feedStatusFilter === "planned") {
-    els.upcomingList.scrollTop = 0;
     return;
   }
 
@@ -652,10 +622,10 @@ function workTypeCard(workType) {
         </section>
       </div>
       <div class="plant-actions">
-        <button class="action-pill action-edit action-compact" type="button" data-action="edit-work-type" data-work-type-id="${escapeHtml(workType.id)}">
+        <button class="action-pill action-edit action-compact action-compact-small" type="button" data-action="edit-work-type" data-work-type-id="${escapeHtml(workType.id)}">
           <i class="ti ti-pencil"></i> Настроить
         </button>
-        <button class="action-pill action-delete action-compact" type="button" data-action="delete-work-type" data-work-type-id="${escapeHtml(workType.id)}">
+        <button class="action-pill action-delete action-compact action-compact-small" type="button" data-action="delete-work-type" data-work-type-id="${escapeHtml(workType.id)}">
           <i class="ti ti-circle-minus"></i> Удалить
         </button>
       </div>
@@ -879,8 +849,8 @@ function plantCard(plant) {
         </section>
       </div>
       <div class="plant-actions">
-        <button class="action-pill action-edit action-compact" type="button" data-action="edit-plant" data-plant-id="${plant.id}"><i class="ti ti-pencil"></i> Настроить</button>
-        <button class="action-pill action-delete action-compact" type="button" data-action="delete-plant" data-plant-id="${plant.id}"><i class="ti ti-circle-minus"></i> Удалить</button>
+        <button class="action-pill action-edit action-compact action-compact-small" type="button" data-action="edit-plant" data-plant-id="${plant.id}"><i class="ti ti-pencil"></i> Настроить</button>
+        <button class="action-pill action-delete action-compact action-compact-small" type="button" data-action="delete-plant" data-plant-id="${plant.id}"><i class="ti ti-circle-minus"></i> Удалить</button>
       </div>
     </article>
   `;
@@ -956,10 +926,6 @@ function onReminderClick(event) {
   const plant = state.plants.find((item) => item.id === button.dataset.plantId);
   const task = plant?.tasks.find((item) => item.id === button.dataset.taskId);
   if (!plant || !task) return;
-
-  if (button.dataset.action === "done") {
-    openDoneDialog(plant, task);
-  }
 
   if (button.dataset.action === "edit-task") {
     openWorkDialog({ plantId: plant.id, taskId: task.id });
@@ -1259,6 +1225,7 @@ function openWorkDialog(options = {}) {
   els.workTaskId.value = existingTask?.id || "";
   renderWorkPlantOptions(selectedPlant?.id || options.plantId);
   renderWorkPreparationPicker(getPreparationIds(existingTask || options));
+  els.workStatus.value = isEditing ? "planned" : "planned";
   els.workType.value = type;
   els.workNextDate.value = existingTask?.nextDate || todayIso();
   els.workRepeat.value = workModeValue(existingTask, options);
@@ -1266,9 +1233,9 @@ function openWorkDialog(options = {}) {
   els.workRepeatDate.value = existingTask?.repeatDate || addCalendarDays(existingTask?.nextDate || todayIso(), existingTask?.interval || defaultIntervalForWork(type, selectedPlant?.type || "other"));
   els.workInterval.value = existingTask?.interval || defaultIntervalForWork(type, selectedPlant?.type || "other");
   els.workNotes.value = existingTask?.notes || "";
-  els.workSubmitButton.textContent = isEditing ? "Сохранить" : "Запланировать";
+  els.workSubmitButton.textContent = isEditing ? "Сохранить" : "Добавить";
   updateWorkModeFields({ resetInterval: false });
-  els.workDialogTitle.textContent = `${isEditing ? "Редактировать" : "Запланировать"}: ${workLabel(type)}`;
+  syncWorkDialogTitle();
   els.workDialog.showModal();
 }
 
@@ -1363,7 +1330,13 @@ function updateWorkModeFields({ resetInterval = true } = {}) {
   els.workInterval.required = usesInterval;
   els.workInterval.disabled = !usesInterval;
   els.workIntervalLabel.textContent = mode === "after" ? "Повторить через, дней" : "Повторять каждые, дней";
-  els.workDialogTitle.textContent = `${els.workTaskId.value ? "Редактировать" : "Запланировать"}: ${workLabel(type)}`;
+  syncWorkDialogTitle();
+}
+
+function syncWorkDialogTitle() {
+  const type = els.workType.value || "water";
+  const label = workLabel(type).toLowerCase();
+  els.workDialogTitle.textContent = els.workTaskId.value ? `Редактировать ${label}` : `Новое задание: ${label}`;
 }
 
 function workModeValue(existingTask, options = {}) {
@@ -1379,24 +1352,63 @@ function saveWorkFromForm(event) {
   const plant = state.plants.find((item) => item.id === els.workPlantId.value);
   if (!plant) return;
   const taskId = els.workTaskId.value || makeId("task");
+  const repeatMode = els.workRepeat.value;
+  const status = els.workStatus.value || "planned";
+  let existingTask = null;
+  let existingTaskPlant = null;
 
   if (els.workTaskId.value) {
     state.plants.forEach((item) => {
-      item.tasks = item.tasks.filter((task) => task.id !== els.workTaskId.value);
+      const foundTask = item.tasks.find((task) => task.id === els.workTaskId.value);
+      if (foundTask) {
+        existingTask = foundTask;
+        existingTaskPlant = item;
+      }
     });
   }
 
-  plant.tasks.push(normalizeTask({
+  const taskData = normalizeTask({
     id: taskId,
     type: els.workType.value,
     preparationIds: getWorkPreparationIds(),
     nextDate: els.workNextDate.value,
     interval: Number(els.workInterval.value),
-    repeat: els.workRepeat.value === "repeat",
-    repeatMode: els.workRepeat.value,
-    repeatDate: els.workRepeat.value === "calendar" ? els.workRepeatDate.value : "",
+    repeat: repeatMode === "repeat",
+    repeatMode,
+    repeatDate: repeatMode === "calendar" ? els.workRepeatDate.value : "",
     notes: els.workNotes.value,
-  }, plant.type));
+  }, plant.type);
+
+  if (status === "done") {
+    let taskForCompletion = taskData;
+
+    if (existingTask && existingTaskPlant === plant) {
+      Object.assign(existingTask, taskData);
+      taskForCompletion = existingTask;
+    } else {
+      if (existingTaskPlant) {
+        existingTaskPlant.tasks = existingTaskPlant.tasks.filter((task) => task.id !== existingTask.id);
+      }
+      plant.tasks.push(taskForCompletion);
+    }
+
+    const logEntry = completeTask({
+      plant,
+      task: taskForCompletion,
+      doneDate: els.workNextDate.value,
+      note: els.workNotes.value,
+      interval: Number(els.workInterval.value),
+      repeat: repeatMode === "repeat",
+      repeatMode,
+      repeatDate: repeatMode === "calendar" ? els.workRepeatDate.value : "",
+    });
+    state.log.push(logEntry);
+  } else {
+    if (existingTaskPlant) {
+      existingTaskPlant.tasks = existingTaskPlant.tasks.filter((task) => task.id !== existingTask.id);
+    }
+    plant.tasks.push(taskData);
+  }
 
   els.workDialog.close();
   persistAndRender();

@@ -126,6 +126,10 @@ p {
   content: "✎";
 }
 
+.ti-settings::before {
+  content: "⚙";
+}
+
 .ti-droplet::before {
   content: "◌";
 }
@@ -770,10 +774,16 @@ h1 {
   font-size: 12px;
   font-weight: 760;
   margin: 2px 0 9px;
+  min-height: 16px;
 }
 
 .timeline-card .reminder-info h3 {
   color: var(--text);
+  font-size: 23px;
+  line-height: 1.05;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
 }
 
 .timeline-card .reminder-info p strong {
@@ -1136,6 +1146,12 @@ h1 {
   margin-top: 13px;
 }
 
+.feed-edit-btn {
+  width: 34px;
+  min-height: 34px;
+  border-radius: 999px;
+}
+
 .action-pill {
   display: inline-flex;
   align-items: center;
@@ -1165,6 +1181,12 @@ h1 {
   font-size: 11px;
 }
 
+.action-compact-small {
+  min-height: 26px;
+  padding: 3px 7px;
+  font-size: 10px;
+}
+
 .action-plan {
   background: var(--blue-soft);
   border-color: var(--blue-border);
@@ -1177,12 +1199,6 @@ h1 {
   color: var(--green-dark);
 }
 
-.action-done {
-  background: var(--surface-strong);
-  border-color: var(--surface-strong);
-  color: #fff;
-}
-
 .history-status .action-pill {
   cursor: default;
 }
@@ -1193,9 +1209,15 @@ h1 {
   color: var(--blue);
 }
 
-.action-planned:hover {
-  border-color: #86bbdd;
-  background: #d9ebf6;
+.action-status {
+  cursor: default;
+  pointer-events: none;
+}
+
+.action-done {
+  background: var(--green-soft);
+  border-color: rgba(34, 122, 80, 0.26);
+  color: var(--green-dark);
 }
 
 .action-delete {

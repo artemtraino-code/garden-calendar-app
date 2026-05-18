@@ -28,7 +28,7 @@
           <section class="panel calendar-panel">
             <div class="panel-head timeline-head">
               <div class="timeline-title-filters">
-                <div id="timeline-counters" class="timeline-counters" aria-label="Фильтры ленты работ"></div>
+                <div id="timeline-counters" class="timeline-counters" aria-label="Переход по статусам ленты работ"></div>
               </div>
               <div class="dashboard-actions dashboard-action-strip">
                 <button id="quick-add-plant-btn" class="primary-btn" type="button"><i class="ti ti-plus"></i> Новое задание</button>
@@ -304,6 +304,13 @@
         </label>
 
         <div class="form-grid">
+          <label class="field">
+            <span>Статус</span>
+            <select id="work-status">
+              <option value="planned">Запланировано</option>
+              <option value="done">Выполнено</option>
+            </select>
+          </label>
           <label class="field">
             <span>Работа</span>
             <select id="work-type">
