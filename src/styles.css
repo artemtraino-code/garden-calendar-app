@@ -369,33 +369,6 @@ h1 {
   margin-top: 12px;
 }
 
-.feed-section-title {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: rgba(251, 253, 248, 0.96);
-  color: var(--muted);
-  padding: 8px 10px;
-  font-size: 12px;
-  font-weight: 850;
-}
-
-.feed-section-title strong {
-  display: grid;
-  place-items: center;
-  min-width: 24px;
-  height: 24px;
-  border-radius: 999px;
-  background: var(--green-soft);
-  color: var(--green-dark);
-}
-
 .reminder-card,
 .plant-card,
 .log-row,
@@ -617,6 +590,54 @@ h1 {
   color: var(--green-dark);
   font-size: 16px;
   font-weight: 850;
+}
+
+.timeline-counters {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.timeline-counter {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  padding: 5px 8px 5px 10px;
+  font-size: 12px;
+  font-weight: 850;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.timeline-counter i {
+  color: var(--green);
+  font-size: 16px;
+}
+
+.timeline-counter strong {
+  display: grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--green-soft);
+  color: var(--green-dark);
+  font-size: 12px;
+}
+
+.timeline-counter-planned i {
+  color: var(--blue);
+}
+
+.timeline-counter-planned strong {
+  background: var(--blue-soft);
+  color: var(--blue);
 }
 
 .title-filter-select {

@@ -35,6 +35,7 @@ const els = {
   weekPrevBtn: document.querySelector("#week-prev-btn"),
   weekNextBtn: document.querySelector("#week-next-btn"),
   timelineLabel: document.querySelector("#timeline-label"),
+  timelineCounters: document.querySelector("#timeline-counters"),
   quickPlan: document.querySelector("#quick-plan"),
   miniLog: document.querySelector("#mini-log"),
   plantGrid: document.querySelector("#plant-grid"),
@@ -98,7 +99,7 @@ render();
 
 function bindEvents() {
   document.querySelectorAll(".tab").forEach((tab) => {
-    tab.addEventListener("click", () => switchTab(tab.dataset.tab));
+    tab.addEventListener("click", () => handleTabClick(tab.dataset.tab));
   });
 
   document.querySelector("#add-plant-btn").addEventListener("click", () => openPlantDialog());
@@ -171,6 +172,23 @@ function switchTab(tabName) {
   render();
 }
 
+function handleTabClick(tabName) {
+  if (tabName === "today") {
+    openDashboardToday();
+    return;
+  }
+
+  switchTab(tabName);
+}
+
+function openDashboardToday() {
+  const today = todayIso();
+  calendarStartDate = today;
+  selectedTimelineDate = today;
+  switchTab("today");
+  requestAnimationFrame(() => scrollFeedToDate(today));
+}
+
 function setDashboardView(view) {
   dashboardView = view || "timeline";
   switchTab("today");
@@ -188,6 +206,7 @@ function renderToday() {
   els.timelineLabel.textContent = selectedTimelineDate
     ? `Выбрана дата: ${formatDate(selectedTimelineDate)}`
     : "Сверху выполненные работы, ниже весь план вперед";
+  renderTimelineCounters(tasks);
   els.upcomingList.innerHTML = renderUnifiedFeed(tasks);
   renderWeekStrip(tasks);
   renderQuickPlan(tasks);
@@ -206,19 +225,30 @@ function renderUnifiedFeed(tasks) {
 
   return `
     <div class="feed-section" data-feed-section="history">
-      <div class="feed-section-title">
-        <span>Выполнено</span>
-        <strong>${history.length}</strong>
-      </div>
       ${history.length ? history.map((entry, index) => historyFeedCard(entry, { isLatest: index === history.length - 1 })).join("") : emptyState("Выполненных работ пока нет")}
     </div>
     <div class="feed-section" data-feed-section="planned">
-      <div class="feed-section-title">
-        <span>Запланировано</span>
-        <strong>${planned.length}</strong>
-      </div>
       ${planned.length ? planned.map(timelineCard).join("") : emptyState("Запланированных работ нет")}
     </div>
+  `;
+}
+
+function renderTimelineCounters(tasks) {
+  if (!els.timelineCounters) {
+    return;
+  }
+
+  els.timelineCounters.innerHTML = `
+    <span class="timeline-counter timeline-counter-done">
+      <i class="ti ti-check"></i>
+      <span>Выполнено</span>
+      <strong>${state.log.length}</strong>
+    </span>
+    <span class="timeline-counter timeline-counter-planned">
+      <i class="ti ti-calendar-event"></i>
+      <span>Запланировано</span>
+      <strong>${tasks.length}</strong>
+    </span>
   `;
 }
 
