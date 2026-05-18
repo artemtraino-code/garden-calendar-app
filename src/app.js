@@ -66,6 +66,7 @@ const els = {
   preparationName: document.querySelector("#preparation-name"),
   preparationCategory: document.querySelector("#preparation-category"),
   preparationImage: document.querySelector("#preparation-image"),
+  preparationDosage: document.querySelector("#preparation-dosage"),
   preparationDescription: document.querySelector("#preparation-description"),
 };
 
@@ -399,6 +400,7 @@ function preparationCard(preparation) {
             <p>${escapeHtml(PREPARATION_CATEGORY_LABELS[preparation.category] || preparation.category)}</p>
           </div>
         </div>
+        ${preparation.dosage ? `<p class="preparation-dosage"><strong>Дозировка:</strong> ${escapeHtml(preparation.dosage)}</p>` : ""}
         <p class="preparation-description">${preparation.description ? escapeHtml(preparation.description) : "Описание пока не добавлено"}</p>
         <div class="preparation-actions">
           <button class="action-pill action-edit action-compact" type="button" data-action="edit-preparation" data-preparation-id="${preparation.id}">
@@ -592,6 +594,7 @@ function openPreparationDialog(preparation = null) {
   els.preparationName.value = preparation?.name || "";
   els.preparationCategory.value = preparation?.category || "other";
   els.preparationImage.value = preparation?.image || "";
+  els.preparationDosage.value = preparation?.dosage || "";
   els.preparationDescription.value = preparation?.description || "";
   els.preparationDialogTitle.textContent = preparation ? "Настроить препарат" : "Новый препарат";
   els.preparationDialog.showModal();
@@ -605,6 +608,7 @@ function savePreparationFromForm(event) {
     name: els.preparationName.value,
     category: els.preparationCategory.value,
     image: els.preparationImage.value,
+    dosage: els.preparationDosage.value,
     description: els.preparationDescription.value,
   });
 
@@ -775,6 +779,7 @@ function updateWorkPreparationPreview() {
     ${preparationImage(preparation, "preparation-preview-image")}
     <div>
       <strong>${escapeHtml(preparation.name)}</strong>
+      ${preparation.dosage ? `<p class="preparation-preview-dosage">Дозировка: ${escapeHtml(preparation.dosage)}</p>` : ""}
       <p>${escapeHtml(preparation.description || "Описание пока не добавлено")}</p>
     </div>
   ` : "";
@@ -890,7 +895,7 @@ function preparationInline(preparation) {
       ${preparationImage(preparation, "preparation-inline-image")}
       <div>
         <strong>${escapeHtml(preparation.name)}</strong>
-        <small>${escapeHtml(preparation.description || PREPARATION_CATEGORY_LABELS[preparation.category] || "Препарат")}</small>
+        <small>${escapeHtml(preparation.dosage ? `Дозировка: ${preparation.dosage}` : preparation.description || PREPARATION_CATEGORY_LABELS[preparation.category] || "Препарат")}</small>
       </div>
     </div>
   `;

@@ -1,8 +1,8 @@
 import { normalizePlant, normalizePreparation } from "./calendar.js";
 import { sampleLog, samplePlants, samplePreparations } from "./sample-data.js";
 
-const STORAGE_KEY = "garden-calendar-state-v7";
-const LEGACY_KEYS = ["garden-calendar-state-v6", "garden-calendar-state-v5", "garden-calendar-state-v4", "garden-calendar-state-v3", "garden-calendar-state-v2", "garden-calendar-state-v1"];
+const STORAGE_KEY = "garden-calendar-state-v9";
+const LEGACY_KEYS = ["garden-calendar-state-v8", "garden-calendar-state-v7", "garden-calendar-state-v6", "garden-calendar-state-v5", "garden-calendar-state-v4", "garden-calendar-state-v3", "garden-calendar-state-v2", "garden-calendar-state-v1"];
 const memoryStorage = new Map();
 
 export function loadState() {
@@ -62,12 +62,30 @@ function createInitialState() {
 
 function normalizeState(state) {
   const hasPreparations = Array.isArray(state?.preparations);
+  const samplePreparationMap = new Map(
+    samplePreparations
+      .map(normalizePreparation)
+      .filter((preparation) => preparation.name)
+      .map((preparation) => [preparation.id, preparation]),
+  );
+  const preparationMap = new Map();
+
+  if (hasPreparations) {
+    state.preparations
+      .map(normalizePreparation)
+      .filter((preparation) => preparation.name)
+      .forEach((preparation) => preparationMap.set(preparation.id, preparation));
+  }
+
+  samplePreparationMap.forEach((samplePreparation, id) => {
+    const existingPreparation = preparationMap.get(id);
+    preparationMap.set(id, existingPreparation ? { ...existingPreparation, ...samplePreparation } : samplePreparation);
+  });
+
   return {
     version: 1,
     plants: Array.isArray(state?.plants) ? state.plants.map(normalizePlant).filter((plant) => plant.name) : [],
-    preparations: hasPreparations
-      ? state.preparations.map(normalizePreparation).filter((preparation) => preparation.name)
-      : samplePreparations.map(normalizePreparation),
+    preparations: [...preparationMap.values()],
     log: Array.isArray(state?.log) ? state.log : [],
   };
 }

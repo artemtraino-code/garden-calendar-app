@@ -799,6 +799,20 @@ h1 {
   margin-top: 7px;
 }
 
+.preparation-dosage,
+.preparation-preview .preparation-preview-dosage {
+  color: var(--text);
+  font-size: 12px;
+  line-height: 1.35;
+  margin-top: 8px;
+}
+
+.preparation-dosage strong,
+.preparation-preview .preparation-preview-dosage {
+  color: var(--green-dark);
+  font-weight: 800;
+}
+
 .plant-header {
   display: flex;
   justify-content: space-between;

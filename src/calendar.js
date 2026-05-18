@@ -32,6 +32,7 @@ export const PREPARATION_CATEGORY_LABELS = {
   insecticide: "Инсектицид",
   fertilizer: "Удобрение",
   stimulant: "Стимулятор",
+  adjuvant: "Прилипач",
   mix: "Смесь",
   other: "Другое",
 };
@@ -167,6 +168,7 @@ export function normalizePreparation(preparation) {
     name: preparation.name?.trim() || "",
     category: preparation.category || "other",
     image: preparation.image?.trim() || "",
+    dosage: preparation.dosage?.trim() || "",
     description: preparation.description?.trim() || "",
   };
 }
