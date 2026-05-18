@@ -69,13 +69,28 @@ function createInitialState() {
 
 function normalizeState(state) {
   const hasPreparations = Array.isArray(state?.preparations);
+  const hasPlants = Array.isArray(state?.plants);
+  const samplePlantMap = new Map(
+    samplePlants
+      .map(normalizePlant)
+      .filter((plant) => plant.name)
+      .map((plant) => [plant.id, plant]),
+  );
   const samplePreparationMap = new Map(
     samplePreparations
       .map(normalizePreparation)
       .filter((preparation) => preparation.name)
       .map((preparation) => [preparation.id, preparation]),
   );
+  const plantMap = new Map();
   const preparationMap = new Map();
+
+  if (hasPlants) {
+    state.plants
+      .map(normalizePlant)
+      .filter((plant) => plant.name)
+      .forEach((plant) => plantMap.set(plant.id, plant));
+  }
 
   if (hasPreparations) {
     state.preparations
@@ -84,6 +99,11 @@ function normalizeState(state) {
       .forEach((preparation) => preparationMap.set(preparation.id, preparation));
   }
 
+  samplePlantMap.forEach((samplePlant, id) => {
+    const existingPlant = plantMap.get(id);
+    plantMap.set(id, existingPlant ? { ...samplePlant, ...existingPlant } : samplePlant);
+  });
+
   samplePreparationMap.forEach((samplePreparation, id) => {
     const existingPreparation = preparationMap.get(id);
     preparationMap.set(id, existingPreparation ? { ...existingPreparation, ...samplePreparation } : samplePreparation);
@@ -91,7 +111,7 @@ function normalizeState(state) {
 
   return {
     version: 1,
-    plants: Array.isArray(state?.plants) ? state.plants.map(normalizePlant).filter((plant) => plant.name) : [],
+    plants: [...plantMap.values()],
     preparations: [...preparationMap.values()],
     workTypes: Array.isArray(state?.workTypes) ? normalizeWorkTypes(state.workTypes) : defaultWorkTypes(),
     log: Array.isArray(state?.log) ? state.log : [],

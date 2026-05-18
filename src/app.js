@@ -401,7 +401,8 @@ function reminderCard(item, compact = false) {
       <div class="task-icon task-${item.task.type}">${iconImage(workIcon(item.task.type), "task-color-icon")}</div>
       <div class="reminder-info">
         <h3>${escapeHtml(title)}</h3>
-        <p>${escapeHtml(dateText)} · ${escapeHtml(taskRepeatText(item.task))}${item.task.notes ? ` · ${escapeHtml(item.task.notes)}` : ""}</p>
+        ${item.task.notes ? `<p class="timeline-note-lead">${escapeHtml(item.task.notes)}</p>` : ""}
+        <p class="timeline-meta">${escapeHtml(dateText)} · ${escapeHtml(taskRepeatText(item.task))}</p>
         ${preparationsInline(preparations)}
       </div>
       <div class="card-actions">
@@ -425,7 +426,8 @@ function timelineCard(item) {
       <div class="task-icon task-${item.task.type}">${iconImage(workIcon(item.task.type), "task-color-icon")}</div>
       <div class="reminder-info">
         <h3>${escapeHtml(`${timelineDateTitle(item)} · ${workTitle}`)}</h3>
-        <p>${escapeHtml(repeatText)}${item.task.notes ? ` · ${escapeHtml(item.task.notes)}` : ""}</p>
+        ${item.task.notes ? `<p class="timeline-note-lead">${escapeHtml(item.task.notes)}</p>` : ""}
+        <p class="timeline-meta">${escapeHtml(repeatText)}</p>
         ${preparationsInline(preparations)}
       </div>
       <div class="card-actions">
@@ -441,13 +443,13 @@ function timelineCard(item) {
 function historyFeedCard(entry, options = {}) {
   const preparations = getPreparations(entry);
   const preparationText = preparations.map((preparation) => preparation.name).join(" + ");
-  const details = [preparationText, entry.note].filter(Boolean).join(" · ");
   return `
     <article class="reminder-card timeline-card history-card" data-feed-date="${escapeHtml(entry.doneDate)}" ${options.isLatest ? 'data-feed-anchor="latest-done"' : ""}>
       <div class="task-icon task-${entry.taskType}">${iconImage(workIcon(entry.taskType), "task-color-icon")}</div>
       <div class="reminder-info">
         <h3>${escapeHtml(`${formatDate(entry.doneDate)} · ${workLabel(entry.taskType)} - ${entry.plantName}`)}</h3>
-        ${details ? `<p>${escapeHtml(details)}</p>` : ""}
+        ${entry.note ? `<p class="timeline-note-lead">${escapeHtml(entry.note)}</p>` : ""}
+        ${preparationText ? `<p class="timeline-meta">${escapeHtml(preparationText)}</p>` : ""}
         ${preparationsInline(preparations)}
       </div>
       <div class="card-actions history-status">
@@ -923,12 +925,22 @@ function emptyState(text) {
 function onReminderClick(event) {
   const button = event.target.closest("button[data-action]");
   if (!button) return;
+
+  if (button.dataset.action === "open-preparation") {
+    const preparation = state.preparations.find((item) => item.id === button.dataset.preparationId);
+    if (preparation) {
+      openPreparationDialog(preparation);
+    }
+    return;
+  }
+
   const plant = state.plants.find((item) => item.id === button.dataset.plantId);
   const task = plant?.tasks.find((item) => item.id === button.dataset.taskId);
   if (!plant || !task) return;
 
   if (button.dataset.action === "edit-task") {
     openWorkDialog({ plantId: plant.id, taskId: task.id });
+    return;
   }
 }
 
@@ -1599,16 +1611,11 @@ function preparationsInline(preparations) {
 }
 
 function preparationInline(preparation) {
-  const purpose = preparationPurpose(preparation);
   return `
-    <div class="preparation-inline">
+    <button class="preparation-inline-chip" type="button" data-action="open-preparation" data-preparation-id="${escapeHtml(preparation.id)}" title="Открыть препарат">
       ${preparationImage(preparation, "preparation-inline-image")}
-      <div>
-        <strong>${escapeHtml(preparation.name)}</strong>
-        ${purpose ? `<small class="preparation-purpose">От чего: ${escapeHtml(purpose)}</small>` : ""}
-        <small>${escapeHtml(preparation.dosage ? `Дозировка: ${preparation.dosage}` : PREPARATION_CATEGORY_LABELS[preparation.category] || "Препарат")}</small>
-      </div>
-    </div>
+      <span>${escapeHtml(preparation.name)}</span>
+    </button>
   `;
 }
 
