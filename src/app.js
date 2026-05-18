@@ -1,6 +1,7 @@
 import {
   DEFAULT_INTERVALS,
   PLANT_TYPE_LABELS,
+  PREPARATION_CATEGORY_LABELS,
   TASK_ICONS,
   TASK_LABELS,
   completeTask,
@@ -8,12 +9,14 @@ import {
   getAllTasks,
   makeId,
   normalizePlant,
+  normalizePreparation,
   normalizeTask,
   todayIso,
 } from "./calendar.js";
 import { loadState, saveState } from "./storage.js";
 
 let state = loadState();
+state.preparations ||= [];
 let activeTab = "today";
 let dashboardView = "timeline";
 let selectedWeekDate = "";
@@ -32,6 +35,7 @@ const els = {
   quickPlan: document.querySelector("#quick-plan"),
   miniLog: document.querySelector("#mini-log"),
   plantGrid: document.querySelector("#plant-grid"),
+  preparationGrid: document.querySelector("#preparation-grid"),
   logSearch: document.querySelector("#log-search"),
   logList: document.querySelector("#log-list"),
   plantDialog: document.querySelector("#plant-dialog"),
@@ -51,8 +55,18 @@ const els = {
   workNextDate: document.querySelector("#work-next-date"),
   workInterval: document.querySelector("#work-interval"),
   workRepeat: document.querySelector("#work-repeat"),
+  workPreparationId: document.querySelector("#work-preparation-id"),
+  workPreparationPreview: document.querySelector("#work-preparation-preview"),
   workNotes: document.querySelector("#work-notes"),
   workSubmitButton: document.querySelector("#work-submit-btn"),
+  preparationDialog: document.querySelector("#preparation-dialog"),
+  preparationForm: document.querySelector("#preparation-form"),
+  preparationDialogTitle: document.querySelector("#preparation-dialog-title"),
+  preparationId: document.querySelector("#preparation-id"),
+  preparationName: document.querySelector("#preparation-name"),
+  preparationCategory: document.querySelector("#preparation-category"),
+  preparationImage: document.querySelector("#preparation-image"),
+  preparationDescription: document.querySelector("#preparation-description"),
 };
 
 bindEvents();
@@ -64,6 +78,7 @@ function bindEvents() {
   });
 
   document.querySelector("#add-plant-btn").addEventListener("click", () => openPlantDialog());
+  document.querySelector("#add-preparation-btn").addEventListener("click", () => openPreparationDialog());
   document.querySelector("#quick-add-plant-btn").addEventListener("click", () => openWorkDialog({ type: "plant" }));
   document.querySelector("#quick-add-work-btn").addEventListener("click", () => openWorkDialog());
   document.querySelector("#add-task-row-btn").addEventListener("click", () => addTaskRow());
@@ -89,6 +104,8 @@ function bindEvents() {
   els.workPlantId.addEventListener("change", () => updateWorkIntervalDefault());
   els.workType.addEventListener("change", () => updateWorkIntervalDefault());
   els.workRepeat.addEventListener("change", () => updateWorkIntervalDefault({ resetInterval: false }));
+  els.workPreparationId.addEventListener("change", updateWorkPreparationPreview);
+  els.preparationForm.addEventListener("submit", savePreparationFromForm);
 
   document.querySelectorAll("[data-close-dialog]").forEach((button) => {
     button.addEventListener("click", () => closeDialog(button.dataset.closeDialog));
@@ -97,8 +114,10 @@ function bindEvents() {
   els.plantDialog.addEventListener("click", closeDialogOnBackdrop);
   els.doneDialog.addEventListener("click", closeDialogOnBackdrop);
   els.workDialog.addEventListener("click", closeDialogOnBackdrop);
+  els.preparationDialog.addEventListener("click", closeDialogOnBackdrop);
 
   els.plantGrid.addEventListener("click", onPlantGridClick);
+  els.preparationGrid.addEventListener("click", onPreparationGridClick);
   els.urgentList.addEventListener("click", onDashboardListClick);
   els.upcomingList.addEventListener("click", onReminderClick);
 }
@@ -109,6 +128,7 @@ function render() {
   renderStats();
   renderToday();
   renderPlants();
+  renderPreparations();
   renderLog();
 }
 
@@ -245,6 +265,7 @@ function renderDashboardControls() {
 
 function reminderCard(item, compact = false) {
   const statusClass = item.status === "overdue" ? "overdue-card" : item.status === "today" ? "today-card" : "";
+  const preparation = getPreparation(item.task.preparationId);
   const dateText = item.diff < 0
     ? `Просрочено ${Math.abs(item.diff)} дн.`
     : item.diff === 0
@@ -258,6 +279,7 @@ function reminderCard(item, compact = false) {
       <div class="reminder-info">
         <h3>${escapeHtml(title)}</h3>
         <p>${escapeHtml(dateText)} · ${item.task.repeat === false ? "разовая работа" : `каждые ${item.task.interval} дн.`}${item.task.notes ? ` · ${escapeHtml(item.task.notes)}` : ""}</p>
+        ${preparation ? preparationInline(preparation) : ""}
       </div>
       <div class="card-actions">
         <button class="action-pill action-edit" type="button" data-action="edit-task" data-plant-id="${item.plant.id}" data-task-id="${item.task.id}">
@@ -273,6 +295,7 @@ function reminderCard(item, compact = false) {
 
 function timelineCard(item) {
   const statusClass = item.status === "today" ? "today-card" : "";
+  const preparation = getPreparation(item.task.preparationId);
   const workTitle = `${TASK_LABELS[item.task.type] || item.task.type} - ${item.plant.name}`;
   const repeatText = item.task.repeat === false ? "разовая работа" : `каждые ${item.task.interval} дн.`;
 
@@ -282,6 +305,7 @@ function timelineCard(item) {
       <div class="reminder-info">
         <h3>${escapeHtml(timelineDateTitle(item))}</h3>
         <p><strong>${escapeHtml(workTitle)}</strong> · ${escapeHtml(repeatText)}${item.task.notes ? ` · ${escapeHtml(item.task.notes)}` : ""}</p>
+        ${preparation ? preparationInline(preparation) : ""}
       </div>
       <div class="card-actions">
         <button class="action-pill action-edit" type="button" data-action="edit-task" data-plant-id="${item.plant.id}" data-task-id="${item.task.id}">
@@ -345,7 +369,7 @@ function renderMiniLog() {
       <span class="task-dot task-${entry.taskType}"></span>
       <div>
         <strong>${escapeHtml(TASK_LABELS[entry.taskType] || entry.taskType)}</strong>
-        <small>${escapeHtml(entry.plantName)} · ${formatDate(entry.doneDate)}</small>
+        <small>${escapeHtml(entry.plantName)} · ${formatDate(entry.doneDate)}${preparationLogText(entry)}</small>
       </div>
     </div>
   `).join("") : emptyState("Журнал пока пуст");
@@ -355,6 +379,38 @@ function renderPlants() {
   const plants = state.plants.slice().sort((a, b) => a.name.localeCompare(b.name, "uk"));
 
   els.plantGrid.innerHTML = plants.length ? plants.map(plantCard).join("") : emptyState("Объекты не найдены");
+}
+
+function renderPreparations() {
+  const preparations = (state.preparations || []).slice().sort((a, b) => a.name.localeCompare(b.name, "ru"));
+  els.preparationGrid.innerHTML = preparations.length
+    ? preparations.map(preparationCard).join("")
+    : emptyState("Препараты пока не заведены");
+}
+
+function preparationCard(preparation) {
+  return `
+    <article class="preparation-card">
+      ${preparationImage(preparation, "preparation-card-image")}
+      <div class="preparation-card-body">
+        <div class="preparation-card-head">
+          <div>
+            <h3>${escapeHtml(preparation.name)}</h3>
+            <p>${escapeHtml(PREPARATION_CATEGORY_LABELS[preparation.category] || preparation.category)}</p>
+          </div>
+        </div>
+        <p class="preparation-description">${preparation.description ? escapeHtml(preparation.description) : "Описание пока не добавлено"}</p>
+        <div class="preparation-actions">
+          <button class="action-pill action-edit action-compact" type="button" data-action="edit-preparation" data-preparation-id="${preparation.id}">
+            <i class="ti ti-pencil"></i> Настроить
+          </button>
+          <button class="action-pill action-delete action-compact" type="button" data-action="delete-preparation" data-preparation-id="${preparation.id}">
+            <i class="ti ti-circle-minus"></i> Удалить
+          </button>
+        </div>
+      </div>
+    </article>
+  `;
 }
 
 function plantCard(plant) {
@@ -389,8 +445,8 @@ function plantCard(plant) {
         </section>
       </div>
       <div class="plant-actions">
-        <button class="action-pill action-edit" type="button" data-action="edit-plant" data-plant-id="${plant.id}"><i class="ti ti-pencil"></i> Настроить</button>
-        <button class="action-pill action-delete" type="button" data-action="delete-plant" data-plant-id="${plant.id}"><i class="ti ti-trash"></i> Удалить</button>
+        <button class="action-pill action-edit action-compact" type="button" data-action="edit-plant" data-plant-id="${plant.id}"><i class="ti ti-pencil"></i> Настроить</button>
+        <button class="action-pill action-delete action-compact" type="button" data-action="delete-plant" data-plant-id="${plant.id}"><i class="ti ti-circle-minus"></i> Удалить</button>
       </div>
     </article>
   `;
@@ -402,7 +458,7 @@ function logMiniForPlant(entry) {
       <span class="task-dot task-${entry.taskType}"></span>
       <div>
         <strong>${escapeHtml(TASK_LABELS[entry.taskType] || entry.taskType)}</strong>
-        <small>${formatDate(entry.doneDate)}${entry.note ? ` · ${escapeHtml(entry.note)}` : ""}</small>
+        <small>${formatDate(entry.doneDate)}${preparationLogText(entry)}${entry.note ? ` · ${escapeHtml(entry.note)}` : ""}</small>
       </div>
     </div>
   `;
@@ -410,6 +466,7 @@ function logMiniForPlant(entry) {
 
 function taskMini(task) {
   const item = getAllTasks([{ tasks: [task] }])[0];
+  const preparation = getPreparation(task.preparationId);
   const dateClass = item.status === "overdue" ? "overdue" : item.status === "today" ? "today" : "";
   const dateText = item.diff < 0 ? `просрочено ${Math.abs(item.diff)}д` : item.diff === 0 ? "сегодня" : formatDate(task.nextDate);
   return `
@@ -417,7 +474,7 @@ function taskMini(task) {
       <span class="task-dot task-${task.type}"></span>
       <div>
         <strong>${escapeHtml(TASK_LABELS[task.type] || task.type)}</strong>
-        <small><span class="task-date ${dateClass}">${escapeHtml(dateText)}</span>${task.notes ? ` · ${escapeHtml(task.notes)}` : ""}</small>
+        <small><span class="task-date ${dateClass}">${escapeHtml(dateText)}</span>${preparation ? ` · ${escapeHtml(preparation.name)}` : ""}${task.notes ? ` · ${escapeHtml(task.notes)}` : ""}</small>
       </div>
     </div>
   `;
@@ -428,7 +485,9 @@ function renderLog() {
   const entries = state.log
     .filter((entry) => {
       if (!search) return true;
-      return [entry.plantName, TASK_LABELS[entry.taskType] || entry.taskType, entry.note].some((value) => String(value || "").toLowerCase().includes(search));
+      const preparation = getPreparation(entry.preparationId);
+      return [entry.plantName, TASK_LABELS[entry.taskType] || entry.taskType, preparation?.name, entry.note]
+        .some((value) => String(value || "").toLowerCase().includes(search));
     })
     .sort((a, b) => b.doneDate.localeCompare(a.doneDate));
 
@@ -436,13 +495,15 @@ function renderLog() {
 }
 
 function logRow(entry) {
+  const preparation = getPreparation(entry.preparationId);
   const nextText = entry.nextScheduled ? ` · следующее ${formatDate(entry.nextScheduled)}` : " · без повторения";
   return `
     <article class="log-row">
       <div class="task-icon task-${entry.taskType}"><i class="ti ${TASK_ICONS[entry.taskType] || "ti-calendar"}"></i></div>
       <div>
         <h3>${escapeHtml(entry.plantName)}</h3>
-        <p>${escapeHtml(TASK_LABELS[entry.taskType] || entry.taskType)}${entry.note ? ` · ${escapeHtml(entry.note)}` : ""}${escapeHtml(nextText)}</p>
+        <p>${escapeHtml(TASK_LABELS[entry.taskType] || entry.taskType)}${preparation ? ` · ${escapeHtml(preparation.name)}` : ""}${entry.note ? ` · ${escapeHtml(entry.note)}` : ""}${escapeHtml(nextText)}</p>
+        ${preparation ? preparationInline(preparation) : ""}
       </div>
       <time>${formatDate(entry.doneDate)}</time>
     </article>
@@ -510,6 +571,72 @@ function deletePlant(plant) {
   persistAndRender();
 }
 
+function onPreparationGridClick(event) {
+  const button = event.target.closest("button[data-action]");
+  if (!button) return;
+  const preparation = state.preparations.find((item) => item.id === button.dataset.preparationId);
+  if (!preparation) return;
+
+  if (button.dataset.action === "edit-preparation") {
+    openPreparationDialog(preparation);
+  }
+
+  if (button.dataset.action === "delete-preparation") {
+    deletePreparation(preparation);
+  }
+}
+
+function openPreparationDialog(preparation = null) {
+  els.preparationForm.reset();
+  els.preparationId.value = preparation?.id || "";
+  els.preparationName.value = preparation?.name || "";
+  els.preparationCategory.value = preparation?.category || "other";
+  els.preparationImage.value = preparation?.image || "";
+  els.preparationDescription.value = preparation?.description || "";
+  els.preparationDialogTitle.textContent = preparation ? "Настроить препарат" : "Новый препарат";
+  els.preparationDialog.showModal();
+}
+
+function savePreparationFromForm(event) {
+  event.preventDefault();
+  const id = els.preparationId.value || makeId("prep");
+  const preparation = normalizePreparation({
+    id,
+    name: els.preparationName.value,
+    category: els.preparationCategory.value,
+    image: els.preparationImage.value,
+    description: els.preparationDescription.value,
+  });
+
+  if (!preparation.name) return;
+
+  const existingIndex = state.preparations.findIndex((item) => item.id === id);
+  if (existingIndex >= 0) {
+    state.preparations[existingIndex] = preparation;
+  } else {
+    state.preparations.push(preparation);
+  }
+
+  els.preparationDialog.close();
+  persistAndRender();
+}
+
+function deletePreparation(preparation) {
+  const confirmed = confirm(`Удалить препарат "${preparation.name}"? В старых и будущих работах он будет отвязан.`);
+  if (!confirmed) return;
+
+  state.preparations = state.preparations.filter((item) => item.id !== preparation.id);
+  state.plants.forEach((plant) => {
+    plant.tasks.forEach((task) => {
+      if (task.preparationId === preparation.id) task.preparationId = "";
+    });
+  });
+  state.log.forEach((entry) => {
+    if (entry.preparationId === preparation.id) entry.preparationId = "";
+  });
+  persistAndRender();
+}
+
 function openPlantDialog(plant = null) {
   els.plantForm.reset();
   els.taskRows.innerHTML = "";
@@ -531,6 +658,7 @@ function addTaskRow(task = {}) {
   const type = task.type || "water";
   node.querySelector(".task-id").value = task.id || "";
   node.querySelector(".task-type").value = type;
+  node.querySelector(".task-preparation").innerHTML = preparationOptions(task.preparationId);
   node.querySelector(".task-next-date").value = task.nextDate || todayIso();
   node.querySelector(".task-interval").value = task.interval || DEFAULT_INTERVALS[type]?.flower || 14;
   node.querySelector(".task-notes").value = task.notes || "";
@@ -573,6 +701,7 @@ function collectTaskRows() {
     .map((row) => ({
       id: row.querySelector(".task-id").value || makeId("task"),
       type: row.querySelector(".task-type").value,
+      preparationId: row.querySelector(".task-preparation").value,
       nextDate: row.querySelector(".task-next-date").value,
       interval: row.querySelector(".task-interval").value,
       notes: row.querySelector(".task-notes").value,
@@ -607,6 +736,7 @@ function openWorkDialog(options = {}) {
   els.workForm.reset();
   els.workTaskId.value = existingTask?.id || "";
   renderWorkPlantOptions(selectedPlant?.id || options.plantId);
+  renderWorkPreparationOptions(existingTask?.preparationId || options.preparationId || "");
   els.workType.value = type;
   els.workNextDate.value = existingTask?.nextDate || todayIso();
   els.workRepeat.value = existingTask ? (existingTask.repeat === false ? "once" : "repeat") : (options.repeat ? "repeat" : "once");
@@ -614,6 +744,7 @@ function openWorkDialog(options = {}) {
   els.workNotes.value = existingTask?.notes || "";
   els.workSubmitButton.textContent = isEditing ? "Сохранить" : "Запланировать";
   updateWorkIntervalDefault({ resetInterval: false });
+  updateWorkPreparationPreview();
   els.workDialogTitle.textContent = `${isEditing ? "Редактировать" : "Запланировать"}: ${TASK_LABELS[type] || "работа"}`;
   els.workDialog.showModal();
 }
@@ -628,6 +759,25 @@ function renderWorkPlantOptions(selectedPlantId = "") {
   if (selectedPlantId && state.plants.some((plant) => plant.id === selectedPlantId)) {
     els.workPlantId.value = selectedPlantId;
   }
+}
+
+function renderWorkPreparationOptions(selectedPreparationId = "") {
+  els.workPreparationId.innerHTML = preparationOptions(selectedPreparationId, "Без препарата");
+  els.workPreparationId.value = selectedPreparationId && state.preparations.some((item) => item.id === selectedPreparationId)
+    ? selectedPreparationId
+    : "";
+}
+
+function updateWorkPreparationPreview() {
+  const preparation = getPreparation(els.workPreparationId.value);
+  els.workPreparationPreview.classList.toggle("is-hidden", !preparation);
+  els.workPreparationPreview.innerHTML = preparation ? `
+    ${preparationImage(preparation, "preparation-preview-image")}
+    <div>
+      <strong>${escapeHtml(preparation.name)}</strong>
+      <p>${escapeHtml(preparation.description || "Описание пока не добавлено")}</p>
+    </div>
+  ` : "";
 }
 
 function updateWorkIntervalDefault({ resetInterval = true } = {}) {
@@ -655,6 +805,7 @@ function saveWorkFromForm(event) {
   plant.tasks.push(normalizeTask({
     id: taskId,
     type: els.workType.value,
+    preparationId: els.workPreparationId.value,
     nextDate: els.workNextDate.value,
     interval: Number(els.workInterval.value),
     repeat: els.workRepeat.value === "repeat",
@@ -708,6 +859,50 @@ function closeDialogOnBackdrop(event) {
   if (event.target === event.currentTarget) {
     event.currentTarget.close();
   }
+}
+
+function preparationOptions(selectedId = "", emptyLabel = "Без препарата") {
+  const options = [`<option value="">${escapeHtml(emptyLabel)}</option>`];
+  options.push(...(state.preparations || [])
+    .slice()
+    .sort((a, b) => a.name.localeCompare(b.name, "ru"))
+    .map((preparation) => `
+      <option value="${escapeHtml(preparation.id)}" ${preparation.id === selectedId ? "selected" : ""}>
+        ${escapeHtml(preparation.name)}
+      </option>
+    `));
+  return options.join("");
+}
+
+function getPreparation(preparationId) {
+  if (!preparationId) return null;
+  return state.preparations.find((preparation) => preparation.id === preparationId) || null;
+}
+
+function preparationLogText(entry) {
+  const preparation = getPreparation(entry.preparationId);
+  return preparation ? ` · ${escapeHtml(preparation.name)}` : "";
+}
+
+function preparationInline(preparation) {
+  return `
+    <div class="preparation-inline">
+      ${preparationImage(preparation, "preparation-inline-image")}
+      <div>
+        <strong>${escapeHtml(preparation.name)}</strong>
+        <small>${escapeHtml(preparation.description || PREPARATION_CATEGORY_LABELS[preparation.category] || "Препарат")}</small>
+      </div>
+    </div>
+  `;
+}
+
+function preparationImage(preparation, className) {
+  if (preparation.image) {
+    return `<img class="${className}" src="${escapeHtml(preparation.image)}" alt="">`;
+  }
+
+  const fallback = preparation.name.trim().slice(0, 2).toUpperCase() || "П";
+  return `<span class="${className} preparation-image-fallback">${escapeHtml(fallback)}</span>`;
 }
 
 function escapeHtml(value) {

@@ -1,3 +1,55 @@
+export const samplePreparations = [
+  {
+    id: "prep_topas",
+    name: "Топас",
+    category: "fungicide",
+    image: "",
+    description: "Фунгицид для обработок от грибковых болезней. В календаре используется для петуний и роз.",
+  },
+  {
+    id: "prep_vertimek",
+    name: "Вертимек",
+    category: "insecticide",
+    image: "",
+    description: "Инсекто-акарицид для защиты от вредителей. Часто идет в баковой смеси с фунгицидом.",
+  },
+  {
+    id: "prep_megafol",
+    name: "Мегафол",
+    category: "stimulant",
+    image: "",
+    description: "Антистрессовый стимулятор после пересадки, жары или обработки.",
+  },
+  {
+    id: "prep_aktara",
+    name: "Актара",
+    category: "insecticide",
+    image: "",
+    description: "Системный инсектицид для защиты рассады и молодых растений от вредителей.",
+  },
+  {
+    id: "prep_previkur",
+    name: "Превикур",
+    category: "fungicide",
+    image: "",
+    description: "Фунгицид для пролива и защиты рассады от корневых гнилей и болезней.",
+  },
+  {
+    id: "prep_master_202020",
+    name: "Мастер 20-20-20",
+    category: "fertilizer",
+    image: "",
+    description: "Комплексная подкормка для роста и восстановления после высадки.",
+  },
+  {
+    id: "prep_boro_plus",
+    name: "Боро Плюс",
+    category: "fertilizer",
+    image: "",
+    description: "Борная подкормка для клубники и культур, где важно цветение и завязь.",
+  },
+];
+
 export const samplePlants = [
   {
     id: "plant_petunia",
@@ -10,6 +62,7 @@ export const samplePlants = [
       {
         id: "task_petunia_treat_20260518",
         type: "treat",
+        preparationId: "prep_topas",
         nextDate: "2026-05-18",
         interval: 14,
         repeat: false,
@@ -46,6 +99,7 @@ export const samplePlants = [
       {
         id: "task_tomato_pepper_previkur_20260520",
         type: "treat",
+        preparationId: "prep_previkur",
         nextDate: "2026-05-20",
         interval: 14,
         repeat: false,
@@ -54,6 +108,7 @@ export const samplePlants = [
       {
         id: "task_tomato_pepper_master_20260527",
         type: "feed",
+        preparationId: "prep_master_202020",
         nextDate: "2026-05-27",
         interval: 10,
         repeat: false,
@@ -105,6 +160,7 @@ export const sampleLog = [
     plantId: "plant_petunia",
     plantName: "Петунии",
     taskType: "treat",
+    preparationId: "prep_topas",
     doneDate: "2026-05-04",
     note: "Топас + Вертимек + Мегафол. Обработка петуний и овощей.",
     nextScheduled: "2026-05-18",
@@ -114,6 +170,7 @@ export const sampleLog = [
     plantId: "plant_strawberry",
     plantName: "Клубника",
     taskType: "feed",
+    preparationId: "prep_boro_plus",
     doneDate: "2026-05-05",
     note: "Боро Плюс, листовая/корневая подкормка.",
     nextScheduled: "2026-05-15",
@@ -123,6 +180,7 @@ export const sampleLog = [
     plantId: "plant_rose",
     plantName: "Розы",
     taskType: "treat",
+    preparationId: "prep_topas",
     doneDate: "2026-05-06",
     note: "Топас + Вертимек.",
     nextScheduled: "",
@@ -132,6 +190,7 @@ export const sampleLog = [
     plantId: "plant_tomato_pepper",
     plantName: "Томаты и перцы",
     taskType: "treat",
+    preparationId: "prep_megafol",
     doneDate: "2026-05-15",
     note: "Мегафол от стресса за день до высадки.",
     nextScheduled: "",
@@ -141,6 +200,7 @@ export const sampleLog = [
     plantId: "plant_strawberry",
     plantName: "Клубника",
     taskType: "feed",
+    preparationId: "prep_boro_plus",
     doneDate: "2026-05-15",
     note: "Повторная подкормка Боро Плюс после 5 мая.",
     nextScheduled: "",
@@ -150,6 +210,7 @@ export const sampleLog = [
     plantId: "plant_tomato_pepper",
     plantName: "Томаты и перцы",
     taskType: "treat",
+    preparationId: "prep_previkur",
     doneDate: "2026-05-15",
     note: "Пролив препаратами Актара + Превикур.",
     nextScheduled: "2026-05-20",

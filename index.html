@@ -17,6 +17,7 @@
     <nav class="tabs" aria-label="Основные разделы">
       <button class="tab active" type="button" data-tab="today"><i class="ti ti-bell"></i> Дашборд</button>
       <button class="tab" type="button" data-tab="objects"><i class="ti ti-plant"></i> Объекты</button>
+      <button class="tab" type="button" data-tab="preparations"><i class="ti ti-flask"></i> Препараты</button>
       <button class="tab" type="button" data-tab="log"><i class="ti ti-history"></i> Журнал</button>
     </nav>
 
@@ -98,6 +99,19 @@
           <button id="clear-log-btn" class="soft-btn" type="button"><i class="ti ti-trash"></i> Очистить журнал</button>
         </div>
         <div id="log-list" class="log-section"></div>
+      </section>
+
+      <section id="tab-preparations" class="section">
+        <section class="panel preparations-panel">
+          <div class="panel-head">
+            <div>
+              <span class="eyebrow">Справочник</span>
+              <h2>Препараты</h2>
+            </div>
+            <button id="add-preparation-btn" class="primary-btn objects-add-btn" type="button"><i class="ti ti-plus"></i> Добавить препарат</button>
+          </div>
+          <div id="preparation-grid" class="preparation-grid"></div>
+        </section>
       </section>
     </main>
 
@@ -249,6 +263,12 @@
           </label>
         </div>
 
+        <label class="field">
+          <span>Препарат</span>
+          <select id="work-preparation-id"></select>
+        </label>
+        <div id="work-preparation-preview" class="preparation-preview is-hidden"></div>
+
         <div class="form-grid">
           <label class="field">
             <span>Заметка</span>
@@ -259,6 +279,52 @@
         <div class="modal-actions">
           <button class="soft-btn" type="button" data-close-dialog="work-dialog">Отмена</button>
           <button id="work-submit-btn" class="primary-btn" type="submit">Запланировать</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="preparation-dialog" class="modal">
+      <form id="preparation-form" method="dialog">
+        <div class="modal-head">
+          <h3 id="preparation-dialog-title">Новый препарат</h3>
+          <button class="icon-btn" type="button" data-close-dialog="preparation-dialog" title="Закрыть">
+            <i class="ti ti-x"></i>
+          </button>
+        </div>
+
+        <input id="preparation-id" type="hidden">
+
+        <label class="field">
+          <span>Название</span>
+          <input id="preparation-name" type="text" placeholder="Топас, Вертимек, Мегафол" required>
+        </label>
+
+        <div class="form-grid">
+          <label class="field">
+            <span>Тип</span>
+            <select id="preparation-category">
+              <option value="fungicide">Фунгицид</option>
+              <option value="insecticide">Инсектицид</option>
+              <option value="fertilizer">Удобрение</option>
+              <option value="stimulant">Стимулятор</option>
+              <option value="mix">Смесь</option>
+              <option value="other">Другое</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Картинка</span>
+            <input id="preparation-image" type="url" placeholder="Ссылка на фото товара">
+          </label>
+        </div>
+
+        <label class="field">
+          <span>Описание</span>
+          <textarea id="preparation-description" placeholder="Для чего используем, против чего работает, важные заметки"></textarea>
+        </label>
+
+        <div class="modal-actions">
+          <button class="soft-btn" type="button" data-close-dialog="preparation-dialog">Отмена</button>
+          <button class="primary-btn" type="submit">Сохранить</button>
         </div>
       </form>
     </dialog>
@@ -276,11 +342,12 @@
           <option value="harvest">Сбор</option>
           <option value="repot">Пересадка</option>
         </select>
+        <select class="task-preparation" aria-label="Препарат"></select>
         <input class="task-next-date" type="date" aria-label="Следующая дата">
         <input class="task-interval" type="number" min="1" max="365" value="14" aria-label="Интервал">
         <input class="task-notes" type="text" placeholder="Препарат, доза, примечание" aria-label="Заметка">
         <button class="icon-btn remove-task-btn" type="button" title="Удалить работу">
-          <i class="ti ti-trash"></i>
+          <i class="ti ti-circle-minus"></i>
         </button>
       </div>
     </template>

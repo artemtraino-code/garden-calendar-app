@@ -27,6 +27,15 @@ export const PLANT_TYPE_LABELS = {
   other: "Другое",
 };
 
+export const PREPARATION_CATEGORY_LABELS = {
+  fungicide: "Фунгицид",
+  insecticide: "Инсектицид",
+  fertilizer: "Удобрение",
+  stimulant: "Стимулятор",
+  mix: "Смесь",
+  other: "Другое",
+};
+
 export const DEFAULT_INTERVALS = {
   plant: { flower: 365, veg: 365, herb: 365, other: 365 },
   water: { flower: 3, veg: 3, herb: 2, other: 7 },
@@ -110,6 +119,7 @@ export function completeTask({ plant, task, doneDate, note, interval, repeat }) 
     plantId: plant.id,
     plantName: plant.name,
     taskType: task.type,
+    preparationId: task.preparationId || "",
     doneDate,
     note: note.trim(),
     nextScheduled,
@@ -130,6 +140,7 @@ export function normalizeTask(task, plantType = "other") {
   return {
     id: task.id || makeId("task"),
     type,
+    preparationId: task.preparationId || "",
     nextDate: task.nextDate || todayIso(),
     interval: Number(task.interval || DEFAULT_INTERVALS[type]?.[plantType] || 14),
     repeat: task.repeat !== false,
@@ -147,5 +158,15 @@ export function normalizePlant(plant) {
     location: plant.location?.trim() || "",
     notes: plant.notes?.trim() || "",
     tasks: (plant.tasks || []).map((task) => normalizeTask(task, type)),
+  };
+}
+
+export function normalizePreparation(preparation) {
+  return {
+    id: preparation.id || makeId("prep"),
+    name: preparation.name?.trim() || "",
+    category: preparation.category || "other",
+    image: preparation.image?.trim() || "",
+    description: preparation.description?.trim() || "",
   };
 }
