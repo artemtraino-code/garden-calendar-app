@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Огородный календарь</title>
+    <link rel="stylesheet" href="./src/styles.css">
+  </head>
+  <body>
+    <header class="app-header">
+      <div>
+        <h1><i class="ti ti-plant-2"></i> Огородный календарь</h1>
+        <p id="today-label" class="header-subtitle"></p>
+      </div>
+    </header>
+
+    <nav class="tabs" aria-label="Основные разделы">
+      <button class="tab active" type="button" data-tab="today"><i class="ti ti-bell"></i> Дашборд</button>
+      <button class="tab" type="button" data-tab="objects"><i class="ti ti-plant"></i> Объекты</button>
+      <button class="tab" type="button" data-tab="log"><i class="ti ti-history"></i> Журнал</button>
+    </nav>
+
+    <main>
+      <section id="tab-today" class="section active">
+        <div class="dashboard-actions dashboard-action-strip">
+          <button id="quick-add-plant-btn" class="primary-btn" type="button"><i class="ti ti-plus"></i> Посадка</button>
+          <button id="quick-add-work-btn" class="soft-btn" type="button"><i class="ti ti-calendar"></i> Запланировать</button>
+        </div>
+
+        <div id="stats-row" class="stats-row" aria-label="Сводка"></div>
+
+        <div class="dashboard-grid">
+          <section class="panel calendar-panel">
+            <div class="panel-head">
+              <div>
+                <span class="eyebrow">Неделя</span>
+                <h2>Ближайшие дни</h2>
+              </div>
+            </div>
+            <div id="week-strip" class="week-strip"></div>
+            <div id="timeline-label" class="timeline-label"></div>
+            <div id="upcoming-list" class="reminder-list compact"></div>
+          </section>
+
+          <section class="work-panel">
+            <div class="panel-head">
+              <div>
+                <span id="work-panel-eyebrow" class="eyebrow">Приоритет</span>
+                <h2 id="work-panel-title">Сделать сейчас</h2>
+              </div>
+            </div>
+            <div id="urgent-list" class="reminder-list"></div>
+          </section>
+
+          <aside class="side-stack">
+            <section class="panel">
+              <div class="panel-head">
+                <div>
+                  <span class="eyebrow">Контроль</span>
+                  <h2>Работы</h2>
+                </div>
+              </div>
+              <div id="quick-plan" class="quick-plan"></div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-head">
+                <div>
+                  <span class="eyebrow">История</span>
+                  <h2>Последние записи</h2>
+                </div>
+              </div>
+              <div id="mini-log" class="mini-log"></div>
+            </section>
+          </aside>
+        </div>
+      </section>
+
+      <section id="tab-objects" class="section">
+        <section class="panel objects-panel">
+          <div class="panel-head">
+            <div>
+              <span class="eyebrow">Объекты</span>
+              <h2>Культуры и группы</h2>
+            </div>
+            <button id="add-plant-btn" class="primary-btn objects-add-btn" type="button"><i class="ti ti-plus"></i> Добавить объект</button>
+          </div>
+          <div id="plant-grid" class="plant-grid"></div>
+        </section>
+      </section>
+
+      <section id="tab-log" class="section">
+        <div class="toolbar">
+          <div class="search-wrap">
+            <i class="ti ti-search"></i>
+            <input id="log-search" type="search" placeholder="Поиск в журнале">
+          </div>
+          <button id="clear-log-btn" class="soft-btn" type="button"><i class="ti ti-trash"></i> Очистить журнал</button>
+        </div>
+        <div id="log-list" class="log-section"></div>
+      </section>
+    </main>
+
+    <dialog id="plant-dialog" class="modal">
+      <form id="plant-form" method="dialog">
+        <div class="modal-head">
+          <h3 id="plant-dialog-title">Новый объект</h3>
+          <button class="icon-btn" type="button" data-close-dialog="plant-dialog" title="Закрыть">
+            <i class="ti ti-x"></i>
+          </button>
+        </div>
+
+        <input id="plant-id" type="hidden">
+
+        <label class="field">
+          <span>Название</span>
+          <input id="plant-name" type="text" placeholder="Петунии, томаты и перцы, огурцы" required>
+        </label>
+
+        <div class="form-grid">
+          <label class="field">
+            <span>Тип</span>
+            <select id="plant-type">
+              <option value="flower">Цветы</option>
+              <option value="veg">Овощи</option>
+              <option value="herb">Зелень</option>
+              <option value="other">Другое</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Дата посадки / учета</span>
+            <input id="plant-planted" type="date">
+          </label>
+        </div>
+
+        <label class="field">
+          <span>Место</span>
+          <input id="plant-location" type="text" placeholder="Теплица, грядка, терраса">
+        </label>
+
+        <label class="field">
+          <span>Заметки</span>
+          <textarea id="plant-notes" placeholder="Сорт, количество, особенности ухода"></textarea>
+        </label>
+
+        <div class="task-editor-head">
+          <span>План работ</span>
+          <button id="add-task-row-btn" class="soft-btn" type="button"><i class="ti ti-plus"></i> Добавить работу</button>
+        </div>
+        <div id="task-rows" class="task-rows"></div>
+
+        <div class="modal-actions">
+          <button class="soft-btn" type="button" data-close-dialog="plant-dialog">Отмена</button>
+          <button class="primary-btn" type="submit">Сохранить</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="done-dialog" class="modal">
+      <form id="done-form" method="dialog">
+        <div class="modal-head">
+          <h3 id="done-dialog-title">Отметить выполненным</h3>
+          <button class="icon-btn" type="button" data-close-dialog="done-dialog" title="Закрыть">
+            <i class="ti ti-x"></i>
+          </button>
+        </div>
+
+        <input id="done-plant-id" type="hidden">
+        <input id="done-task-id" type="hidden">
+
+        <label class="field">
+          <span>Дата выполнения</span>
+          <input id="done-date" type="date" required>
+        </label>
+
+        <label class="field">
+          <span>Заметка</span>
+          <textarea id="done-note" placeholder="Что использовали, доза, результат"></textarea>
+        </label>
+
+        <div class="form-grid">
+          <label class="field">
+            <span>Следующее повторение</span>
+            <select id="done-mode">
+              <option value="repeat">Повторить</option>
+              <option value="stop">Не повторять</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Интервал, дней</span>
+            <input id="done-interval" type="number" min="1" max="365" required>
+          </label>
+        </div>
+
+        <div class="modal-actions">
+          <button class="soft-btn" type="button" data-close-dialog="done-dialog">Отмена</button>
+          <button class="primary-btn" type="submit">Сделано</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="work-dialog" class="modal">
+      <form id="work-form" method="dialog">
+        <div class="modal-head">
+          <h3 id="work-dialog-title">Запланировать работу</h3>
+          <button class="icon-btn" type="button" data-close-dialog="work-dialog" title="Закрыть">
+            <i class="ti ti-x"></i>
+          </button>
+        </div>
+
+        <input id="work-task-id" type="hidden">
+
+        <label class="field">
+          <span>Культура / группа</span>
+          <select id="work-plant-id" required></select>
+        </label>
+
+        <div class="form-grid">
+          <label class="field">
+            <span>Работа</span>
+            <select id="work-type">
+              <option value="plant">Посадка</option>
+              <option value="water">Полив</option>
+              <option value="feed">Подкормка</option>
+              <option value="treat">Обработка</option>
+              <option value="prune">Обрезка</option>
+              <option value="inspect">Осмотр</option>
+              <option value="harvest">Сбор</option>
+              <option value="repot">Пересадка</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Дата</span>
+            <input id="work-next-date" type="date" required>
+          </label>
+        </div>
+
+        <div class="form-grid">
+          <label class="field">
+            <span>Повторять каждые, дней</span>
+            <input id="work-interval" type="number" min="1" max="365" required>
+          </label>
+          <label class="field">
+            <span>Режим</span>
+            <select id="work-repeat">
+              <option value="once">Разовая работа</option>
+              <option value="repeat">Повторять</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="form-grid">
+          <label class="field">
+            <span>Заметка</span>
+            <input id="work-notes" type="text" placeholder="Например: после дождя не поливать">
+          </label>
+        </div>
+
+        <div class="modal-actions">
+          <button class="soft-btn" type="button" data-close-dialog="work-dialog">Отмена</button>
+          <button id="work-submit-btn" class="primary-btn" type="submit">Запланировать</button>
+        </div>
+      </form>
+    </dialog>
+
+    <template id="task-row-template">
+      <div class="task-row">
+        <input class="task-id" type="hidden">
+        <select class="task-type" aria-label="Тип работы">
+          <option value="plant">Посадка</option>
+          <option value="water">Полив</option>
+          <option value="feed">Подкормка</option>
+          <option value="treat">Обработка</option>
+          <option value="prune">Обрезка</option>
+          <option value="inspect">Осмотр</option>
+          <option value="harvest">Сбор</option>
+          <option value="repot">Пересадка</option>
+        </select>
+        <input class="task-next-date" type="date" aria-label="Следующая дата">
+        <input class="task-interval" type="number" min="1" max="365" value="14" aria-label="Интервал">
+        <input class="task-notes" type="text" placeholder="Препарат, доза, примечание" aria-label="Заметка">
+        <button class="icon-btn remove-task-btn" type="button" title="Удалить работу">
+          <i class="ti ti-trash"></i>
+        </button>
+      </div>
+    </template>
+
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>
