@@ -16,8 +16,7 @@
 
     <nav class="tabs" aria-label="Основные разделы">
       <button class="tab active" type="button" data-tab="today"><i class="ti ti-bell"></i> Лента работ</button>
-      <button class="tab" type="button" data-tab="objects"><i class="ti ti-plant"></i> Объекты</button>
-      <button class="tab" type="button" data-tab="cultures"><i class="ti ti-seeding"></i> Культуры</button>
+      <button class="tab" type="button" data-tab="objects"><i class="ti ti-plant"></i> Цветы и овощи</button>
       <button class="tab" type="button" data-tab="work-types"><i class="ti ti-list-check"></i> Работы</button>
       <button class="tab" type="button" data-tab="preparations"><i class="ti ti-flask"></i> Препараты</button>
       <button class="tab" type="button" data-tab="log"><i class="ti ti-history"></i> Журнал</button>
@@ -86,10 +85,9 @@
         <section class="panel objects-panel">
           <div class="panel-head">
             <div>
-              <span class="eyebrow">Объекты</span>
-              <h2>Культуры и группы</h2>
+              <h2>Цветы и овощи</h2>
             </div>
-            <button id="add-plant-btn" class="primary-btn objects-add-btn" type="button"><i class="ti ti-plus"></i> Добавить объект</button>
+            <button id="add-plant-btn" class="primary-btn objects-add-btn" type="button"><i class="ti ti-plus"></i> Добавить культуру</button>
           </div>
           <div id="plant-grid" class="plant-grid"></div>
         </section>
@@ -106,24 +104,10 @@
         <div id="log-list" class="log-section"></div>
       </section>
 
-      <section id="tab-cultures" class="section">
-        <section class="panel directory-panel">
-          <div class="panel-head">
-            <div>
-              <span class="eyebrow">Справочник</span>
-              <h2>Культуры</h2>
-            </div>
-            <button id="add-culture-btn" class="primary-btn objects-add-btn" type="button"><i class="ti ti-plus"></i> Добавить культуру</button>
-          </div>
-          <div id="culture-grid" class="directory-grid"></div>
-        </section>
-      </section>
-
       <section id="tab-work-types" class="section">
         <section class="panel directory-panel">
           <div class="panel-head">
             <div>
-              <span class="eyebrow">Справочник</span>
               <h2>Работы</h2>
             </div>
             <button id="add-work-type-btn" class="primary-btn objects-add-btn" type="button"><i class="ti ti-plus"></i> Добавить работу</button>
@@ -149,7 +133,7 @@
     <dialog id="plant-dialog" class="modal">
       <form id="plant-form" method="dialog">
         <div class="modal-head">
-          <h3 id="plant-dialog-title">Новый объект</h3>
+          <h3 id="plant-dialog-title">Новая культура</h3>
           <button class="icon-btn" type="button" data-close-dialog="plant-dialog" title="Закрыть">
             <i class="ti ti-x"></i>
           </button>
@@ -182,6 +166,12 @@
           <span>Место</span>
           <input id="plant-location" type="text" placeholder="Теплица, грядка, терраса">
         </label>
+
+        <div class="field icon-field">
+          <span>Иконка</span>
+          <input id="plant-icon" type="hidden">
+          <div id="plant-icon-picker" class="icon-picker" aria-label="Выбор иконки культуры"></div>
+        </div>
 
         <label class="field">
           <span>Заметки</span>
@@ -428,44 +418,6 @@
       </form>
     </dialog>
 
-    <dialog id="culture-dialog" class="modal">
-      <form id="culture-form" method="dialog">
-        <div class="modal-head">
-          <h3 id="culture-dialog-title">Новая культура</h3>
-          <button class="icon-btn" type="button" data-close-dialog="culture-dialog" title="Закрыть">
-            <i class="ti ti-x"></i>
-          </button>
-        </div>
-
-        <input id="culture-id" type="hidden">
-
-        <label class="field">
-          <span>Название</span>
-          <input id="culture-name" type="text" placeholder="Петуния, томат, огурец" required>
-        </label>
-
-        <label class="field">
-          <span>Тип</span>
-          <select id="culture-type">
-            <option value="flower">Цветы</option>
-            <option value="veg">Овощи</option>
-            <option value="herb">Зелень</option>
-            <option value="other">Другое</option>
-          </select>
-        </label>
-
-        <label class="field">
-          <span>Заметки</span>
-          <textarea id="culture-notes" placeholder="Особенности культуры, сроки, важные условия"></textarea>
-        </label>
-
-        <div class="modal-actions">
-          <button class="soft-btn" type="button" data-close-dialog="culture-dialog">Отмена</button>
-          <button class="primary-btn" type="submit">Сохранить</button>
-        </div>
-      </form>
-    </dialog>
-
     <dialog id="work-type-dialog" class="modal">
       <form id="work-type-form" method="dialog">
         <div class="modal-head">
@@ -486,6 +438,12 @@
           <span>Интервал по умолчанию, дней</span>
           <input id="work-type-interval" type="number" min="1" max="365" value="14" required>
         </label>
+
+        <div class="field icon-field">
+          <span>Иконка</span>
+          <input id="work-type-icon" type="hidden">
+          <div id="work-type-icon-picker" class="icon-picker" aria-label="Выбор иконки работы"></div>
+        </div>
 
         <div class="modal-actions">
           <button class="soft-btn" type="button" data-close-dialog="work-type-dialog">Отмена</button>

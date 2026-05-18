@@ -176,6 +176,7 @@ export function normalizePlant(plant) {
     id: plant.id || makeId("plant"),
     name: plant.name?.trim() || "",
     type,
+    icon: plant.icon?.trim() || "",
     planted: plant.planted || todayIso(),
     location: plant.location?.trim() || "",
     notes: plant.notes?.trim() || "",
