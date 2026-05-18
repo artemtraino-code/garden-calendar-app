@@ -19,9 +19,12 @@ let state = loadState();
 state.preparations ||= [];
 let activeTab = "today";
 let dashboardView = "timeline";
-let timelineRange = "week";
+let timelineRange = "nearest";
+let selectedTimelineDate = "";
+let calendarStartDate = todayIso();
 
 const TIMELINE_RANGES = {
+  nearest: { label: "Ближайшие дни", days: null },
   three: { label: "3 дня", days: 3 },
   week: { label: "Неделя", days: 7 },
   month: { label: "Месяц", days: 30 },
@@ -36,7 +39,10 @@ const els = {
   workPanelTitle: document.querySelector("#work-panel-title"),
   urgentList: document.querySelector("#urgent-list"),
   upcomingList: document.querySelector("#upcoming-list"),
-  timelineRange: document.querySelector("#timeline-range"),
+  timelineRangeSelect: document.querySelector("#timeline-range-select"),
+  weekStrip: document.querySelector("#week-strip"),
+  weekPrevBtn: document.querySelector("#week-prev-btn"),
+  weekNextBtn: document.querySelector("#week-next-btn"),
   timelineLabel: document.querySelector("#timeline-label"),
   quickPlan: document.querySelector("#quick-plan"),
   miniLog: document.querySelector("#mini-log"),
@@ -95,10 +101,13 @@ function bindEvents() {
     const button = event.target.closest("[data-dashboard-view]");
     if (button) setDashboardView(button.dataset.dashboardView);
   });
-  els.timelineRange.addEventListener("click", (event) => {
-    const button = event.target.closest("[data-timeline-range]");
-    if (button) setTimelineRange(button.dataset.timelineRange);
+  els.timelineRangeSelect.addEventListener("change", () => setTimelineRange(els.timelineRangeSelect.value));
+  els.weekStrip.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-week-date]");
+    if (button) setTimelineDate(button.dataset.weekDate);
   });
+  els.weekPrevBtn.addEventListener("click", () => shiftCalendarRange(-7));
+  els.weekNextBtn.addEventListener("click", () => shiftCalendarRange(7));
 
   els.logSearch.addEventListener("input", renderLog);
   els.plantForm.addEventListener("submit", savePlantFromForm);
@@ -155,28 +164,61 @@ function persistAndRender() {
 function renderToday() {
   const tasks = getAllTasks(state.plants).sort((a, b) => a.diff - b.diff || a.plant.name.localeCompare(b.plant.name, "uk"));
   const range = TIMELINE_RANGES[timelineRange] || TIMELINE_RANGES.week;
-  const timelineTasks = tasks.filter((item) => item.diff >= 0 && item.diff <= range.days);
+  const timelineTasks = getTimelineTasks(tasks, range);
   const panel = getDashboardPanel(tasks);
   const isTimeline = dashboardView === "timeline";
 
+  els.timelineRangeSelect.value = timelineRange;
   els.calendarPanel.classList.toggle("is-hidden", !isTimeline);
   els.workPanel.classList.toggle("is-hidden", isTimeline);
   els.workPanelEyebrow.textContent = panel.eyebrow;
   els.workPanelTitle.textContent = panel.title;
   els.urgentList.innerHTML = panel.html;
-  els.timelineLabel.textContent = `Период: ${range.label}`;
+  els.timelineLabel.textContent = getTimelineLabel(range);
   els.upcomingList.innerHTML = timelineTasks.length
     ? timelineTasks.map(timelineCard).join("")
-    : emptyState(`В периоде "${range.label}" работ нет`);
-  renderTimelineRange(tasks);
+    : emptyState(getTimelineEmptyText(range));
+  renderWeekStrip(tasks);
   renderQuickPlan(tasks);
   renderMiniLog();
   renderDashboardControls();
 }
 
+function getTimelineTasks(tasks, range) {
+  if (selectedTimelineDate) {
+    return tasks.filter((item) => item.task.nextDate === selectedTimelineDate);
+  }
+  if (!range.days) {
+    return tasks.filter((item) => item.diff >= 0);
+  }
+  return tasks.filter((item) => item.diff >= 0 && item.diff <= range.days);
+}
+
+function getTimelineLabel(range) {
+  if (selectedTimelineDate) return `Дата: ${formatDate(selectedTimelineDate)}`;
+  return `Период: ${range.label}`;
+}
+
+function getTimelineEmptyText(range) {
+  if (selectedTimelineDate) return `На ${formatDate(selectedTimelineDate)} работ нет`;
+  return `В периоде "${range.label}" работ нет`;
+}
+
 function setTimelineRange(range) {
   if (!TIMELINE_RANGES[range]) return;
   timelineRange = range;
+  selectedTimelineDate = "";
+  renderToday();
+}
+
+function setTimelineDate(isoDate) {
+  selectedTimelineDate = selectedTimelineDate === isoDate ? "" : (isoDate || "");
+  renderToday();
+}
+
+function shiftCalendarRange(days) {
+  calendarStartDate = addCalendarDays(calendarStartDate, days);
+  selectedTimelineDate = "";
   renderToday();
 }
 
@@ -307,16 +349,20 @@ function timelineDateTitle(item) {
   return item.diff === 0 ? `Сегодня, ${formatDate(item.task.nextDate)}` : formatDate(item.task.nextDate);
 }
 
-function renderTimelineRange(tasks) {
-  els.timelineRange.innerHTML = Object.entries(TIMELINE_RANGES).map(([key, range]) => {
-    const count = tasks.filter((item) => item.diff >= 0 && item.diff <= range.days).length;
-    return `
-      <button class="range-chip ${timelineRange === key ? "active" : ""}" type="button" data-timeline-range="${key}">
-        <span>${escapeHtml(range.label)}</span>
-        <small>${count}</small>
-      </button>
-    `;
-  }).join("");
+function renderWeekStrip(tasks) {
+  const today = todayIso();
+  const days = Array.from({ length: 7 }, (_, index) => {
+    const iso = addCalendarDays(calendarStartDate, index);
+    const count = tasks.filter((item) => item.task.nextDate === iso).length;
+    return { iso, count };
+  });
+
+  els.weekStrip.innerHTML = days.map((day) => `
+    <button class="day-pill ${day.iso === today ? "today" : ""} ${day.count ? "busy" : ""} ${selectedTimelineDate === day.iso ? "active" : ""}" type="button" data-week-date="${day.iso}">
+      <span>${formatDate(day.iso)}</span>
+      ${day.count ? `<small>${day.count}</small>` : ""}
+    </button>
+  `).join("");
 }
 
 function renderQuickPlan(tasks) {
@@ -826,6 +872,13 @@ function clearLog() {
   if (!confirm("Очистить весь журнал выполненных работ? Культуры и будущие работы останутся.")) return;
   state.log = [];
   persistAndRender();
+}
+
+function addCalendarDays(isoDate, days) {
+  const [year, month, day] = isoDate.split("-").map(Number);
+  const date = new Date(year, month - 1, day);
+  date.setDate(date.getDate() + Number(days || 0));
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
 function closeDialog(id) {

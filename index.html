@@ -23,20 +23,32 @@
 
     <main>
       <section id="tab-today" class="section active">
-        <div class="dashboard-actions dashboard-action-strip">
-          <button id="quick-add-plant-btn" class="primary-btn" type="button"><i class="ti ti-plus"></i> Посадка</button>
-          <button id="quick-add-work-btn" class="soft-btn" type="button"><i class="ti ti-calendar"></i> Запланировать</button>
-        </div>
-
         <div class="dashboard-grid">
           <section class="panel calendar-panel">
-            <div class="panel-head">
-              <div>
-                <span class="eyebrow">Неделя</span>
-                <h2>Ближайшие дни</h2>
+            <div class="panel-head timeline-head">
+              <div class="timeline-title-filters">
+                <select id="timeline-range-select" class="title-filter-select" aria-label="Период работ">
+                  <option value="nearest">Ближайшие дни</option>
+                  <option value="three">3 дня</option>
+                  <option value="week">Неделя</option>
+                  <option value="month">Месяц</option>
+                  <option value="quarter">3 месяца</option>
+                </select>
+              </div>
+              <div class="dashboard-actions dashboard-action-strip">
+                <button id="quick-add-plant-btn" class="primary-btn" type="button"><i class="ti ti-plus"></i> Посадка</button>
+                <button id="quick-add-work-btn" class="soft-btn" type="button"><i class="ti ti-calendar"></i> Запланировать</button>
               </div>
             </div>
-            <div id="timeline-range" class="range-filter" aria-label="Период работ"></div>
+            <div class="week-carousel" aria-label="Выбор даты">
+              <button id="week-prev-btn" class="week-arrow" type="button" title="Предыдущие даты">
+                <i class="ti ti-chevron-left"></i>
+              </button>
+              <div id="week-strip" class="week-strip"></div>
+              <button id="week-next-btn" class="week-arrow" type="button" title="Следующие даты">
+                <i class="ti ti-chevron-right"></i>
+              </button>
+            </div>
             <div id="timeline-label" class="timeline-label"></div>
             <div id="upcoming-list" class="reminder-list compact"></div>
           </section>
