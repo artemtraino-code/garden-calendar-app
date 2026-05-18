@@ -17,9 +17,12 @@ import { loadState, saveState } from "./storage.js";
 
 let state = loadState();
 state.preparations ||= [];
+state.cultures ||= [];
+state.workTypes ||= [];
 let activeTab = "today";
 let dashboardView = "timeline";
 let selectedTimelineDate = "";
+let feedStatusFilter = "all";
 let calendarStartDate = todayIso();
 let postponeCalendarMonth = todayIso().slice(0, 7) + "-01";
 
@@ -39,6 +42,8 @@ const els = {
   quickPlan: document.querySelector("#quick-plan"),
   miniLog: document.querySelector("#mini-log"),
   plantGrid: document.querySelector("#plant-grid"),
+  cultureGrid: document.querySelector("#culture-grid"),
+  workTypeGrid: document.querySelector("#work-type-grid"),
   preparationGrid: document.querySelector("#preparation-grid"),
   logSearch: document.querySelector("#log-search"),
   logList: document.querySelector("#log-list"),
@@ -54,6 +59,7 @@ const els = {
   doneRepeatDateField: document.querySelector("#done-repeat-date-field"),
   doneRepeatDate: document.querySelector("#done-repeat-date"),
   doneIntervalField: document.querySelector("#done-interval-field"),
+  doneIntervalLabel: document.querySelector("#done-interval-label"),
   doneInterval: document.querySelector("#done-interval"),
   postponeTaskBtn: document.querySelector("#postpone-task-btn"),
   postponeDialog: document.querySelector("#postpone-dialog"),
@@ -76,6 +82,7 @@ const els = {
   workRepeatDateField: document.querySelector("#work-repeat-date-field"),
   workRepeatDate: document.querySelector("#work-repeat-date"),
   workIntervalField: document.querySelector("#work-interval-field"),
+  workIntervalLabel: document.querySelector("#work-interval-label"),
   workInterval: document.querySelector("#work-interval"),
   workRepeat: document.querySelector("#work-repeat"),
   workPreparationId: document.querySelector("#work-preparation-id"),
@@ -92,6 +99,19 @@ const els = {
   preparationImage: document.querySelector("#preparation-image"),
   preparationDosage: document.querySelector("#preparation-dosage"),
   preparationDescription: document.querySelector("#preparation-description"),
+  cultureDialog: document.querySelector("#culture-dialog"),
+  cultureForm: document.querySelector("#culture-form"),
+  cultureDialogTitle: document.querySelector("#culture-dialog-title"),
+  cultureId: document.querySelector("#culture-id"),
+  cultureName: document.querySelector("#culture-name"),
+  cultureType: document.querySelector("#culture-type"),
+  cultureNotes: document.querySelector("#culture-notes"),
+  workTypeDialog: document.querySelector("#work-type-dialog"),
+  workTypeForm: document.querySelector("#work-type-form"),
+  workTypeDialogTitle: document.querySelector("#work-type-dialog-title"),
+  workTypeId: document.querySelector("#work-type-id"),
+  workTypeLabel: document.querySelector("#work-type-label"),
+  workTypeInterval: document.querySelector("#work-type-interval"),
 };
 
 bindEvents();
@@ -104,8 +124,9 @@ function bindEvents() {
 
   document.querySelector("#add-plant-btn").addEventListener("click", () => openPlantDialog());
   document.querySelector("#add-preparation-btn").addEventListener("click", () => openPreparationDialog());
-  document.querySelector("#quick-add-plant-btn").addEventListener("click", () => openWorkDialog({ type: "plant" }));
-  document.querySelector("#quick-add-work-btn").addEventListener("click", () => openWorkDialog());
+  document.querySelector("#add-culture-btn").addEventListener("click", () => openCultureDialog());
+  document.querySelector("#add-work-type-btn").addEventListener("click", () => openWorkTypeDialog());
+  document.querySelector("#quick-add-plant-btn").addEventListener("click", () => openWorkDialog());
   document.querySelector("#add-task-row-btn").addEventListener("click", () => addTaskRow());
   document.querySelector("#clear-log-btn").addEventListener("click", clearLog);
 
@@ -119,6 +140,10 @@ function bindEvents() {
   });
   els.weekPrevBtn.addEventListener("click", () => shiftCalendarRange(-1));
   els.weekNextBtn.addEventListener("click", () => shiftCalendarRange(1));
+  els.timelineCounters.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-feed-filter]");
+    if (button) setFeedStatusFilter(button.dataset.feedFilter);
+  });
 
   els.logSearch.addEventListener("input", renderLog);
   els.plantForm.addEventListener("submit", savePlantFromForm);
@@ -138,6 +163,8 @@ function bindEvents() {
   els.addWorkPreparationBtn.addEventListener("click", addWorkPreparationFromSelect);
   els.workPreparationPreview.addEventListener("click", removeWorkPreparation);
   els.preparationForm.addEventListener("submit", savePreparationFromForm);
+  els.cultureForm.addEventListener("submit", saveCultureFromForm);
+  els.workTypeForm.addEventListener("submit", saveWorkTypeFromForm);
 
   document.querySelectorAll("[data-close-dialog]").forEach((button) => {
     button.addEventListener("click", () => closeDialog(button.dataset.closeDialog));
@@ -148,8 +175,12 @@ function bindEvents() {
   els.postponeDialog.addEventListener("click", closeDialogOnBackdrop);
   els.workDialog.addEventListener("click", closeDialogOnBackdrop);
   els.preparationDialog.addEventListener("click", closeDialogOnBackdrop);
+  els.cultureDialog.addEventListener("click", closeDialogOnBackdrop);
+  els.workTypeDialog.addEventListener("click", closeDialogOnBackdrop);
 
   els.plantGrid.addEventListener("click", onPlantGridClick);
+  els.cultureGrid.addEventListener("click", onCultureGridClick);
+  els.workTypeGrid.addEventListener("click", onWorkTypeGridClick);
   els.preparationGrid.addEventListener("click", onPreparationGridClick);
   els.urgentList.addEventListener("click", onDashboardListClick);
   els.upcomingList.addEventListener("click", onReminderClick);
@@ -160,6 +191,8 @@ function render() {
   els.todayLabel.textContent = todayLabel;
   renderToday();
   renderPlants();
+  renderCultures();
+  renderWorkTypes();
   renderPreparations();
   renderLog();
 }
@@ -184,7 +217,8 @@ function handleTabClick(tabName) {
 function openDashboardToday() {
   const today = todayIso();
   calendarStartDate = today;
-  selectedTimelineDate = today;
+  selectedTimelineDate = "";
+  feedStatusFilter = "all";
   switchTab("today");
   requestAnimationFrame(() => scrollFeedToDate(today));
 }
@@ -201,59 +235,85 @@ function persistAndRender() {
 
 function renderToday() {
   const tasks = getAllTasks(state.plants).sort((a, b) => a.diff - b.diff || a.plant.name.localeCompare(b.plant.name, "uk"));
+  const allFeedGroups = getFeedGroups(tasks, { applyDate: false });
+  const visibleFeedGroups = feedStatusFilter === "all" ? getFeedGroups(tasks) : allFeedGroups;
   els.calendarPanel.classList.remove("is-hidden");
   els.workPanel.classList.add("is-hidden");
   els.timelineLabel.textContent = selectedTimelineDate
     ? `Выбрана дата: ${formatDate(selectedTimelineDate)}`
     : "Сверху выполненные работы, ниже весь план вперед";
-  renderTimelineCounters(tasks);
-  els.upcomingList.innerHTML = renderUnifiedFeed(tasks);
+  renderTimelineCounters(allFeedGroups);
+  els.upcomingList.innerHTML = renderUnifiedFeed(visibleFeedGroups);
   renderWeekStrip(tasks);
   renderQuickPlan(tasks);
   renderMiniLog();
   renderDashboardControls();
-  if (!selectedTimelineDate) {
-    requestAnimationFrame(scrollFeedToLatestDone);
-  }
+  requestAnimationFrame(positionFeedAfterRender);
 }
 
-function renderUnifiedFeed(tasks) {
+function getFeedGroups(tasks, options = {}) {
+  const applyDate = options.applyDate !== false;
   const history = [...state.log]
+    .filter((entry) => !applyDate || !selectedTimelineDate || entry.doneDate === selectedTimelineDate)
     .sort((a, b) => a.doneDate.localeCompare(b.doneDate) || a.id.localeCompare(b.id));
   const planned = tasks
+    .filter((item) => !applyDate || !selectedTimelineDate || item.task.nextDate === selectedTimelineDate)
     .sort((a, b) => a.task.nextDate.localeCompare(b.task.nextDate) || a.plant.name.localeCompare(b.plant.name, "uk"));
 
+  return { history, planned };
+}
+
+function renderUnifiedFeed({ history, planned }) {
+  if (feedStatusFilter === "done") {
+    return history.length
+      ? `<div class="feed-section" data-feed-section="history">${history.map((entry, index) => historyFeedCard(entry, { isLatest: index === history.length - 1 })).join("")}</div>`
+      : emptyState(selectedTimelineDate ? "На выбранную дату выполненных работ нет" : "Выполненных работ пока нет");
+  }
+
+  if (feedStatusFilter === "planned") {
+    return planned.length
+      ? `<div class="feed-section" data-feed-section="planned">${planned.map(timelineCard).join("")}</div>`
+      : emptyState(selectedTimelineDate ? "На выбранную дату запланированных работ нет" : "Запланированных работ нет");
+  }
+
+  if (!history.length && !planned.length) {
+    return emptyState(selectedTimelineDate ? "На выбранную дату работ нет" : "Работ в ленте пока нет");
+  }
+
   return `
-    <div class="feed-section" data-feed-section="history">
-      ${history.length ? history.map((entry, index) => historyFeedCard(entry, { isLatest: index === history.length - 1 })).join("") : emptyState("Выполненных работ пока нет")}
-    </div>
-    <div class="feed-section" data-feed-section="planned">
-      ${planned.length ? planned.map(timelineCard).join("") : emptyState("Запланированных работ нет")}
-    </div>
+    ${history.length ? `<div class="feed-section" data-feed-section="history">${history.map((entry, index) => historyFeedCard(entry, { isLatest: index === history.length - 1 })).join("")}</div>` : ""}
+    ${planned.length ? `<div class="feed-section" data-feed-section="planned">${planned.map(timelineCard).join("")}</div>` : ""}
   `;
 }
 
-function renderTimelineCounters(tasks) {
+function renderTimelineCounters({ history, planned }) {
   if (!els.timelineCounters) {
     return;
   }
 
   els.timelineCounters.innerHTML = `
-    <span class="timeline-counter timeline-counter-done">
+    <button class="timeline-counter timeline-counter-done ${feedStatusFilter === "done" ? "is-active" : ""}" type="button" data-feed-filter="done" aria-pressed="${feedStatusFilter === "done"}">
       <i class="ti ti-check"></i>
       <span>Выполнено</span>
-      <strong>${state.log.length}</strong>
-    </span>
-    <span class="timeline-counter timeline-counter-planned">
+      <strong>${history.length}</strong>
+    </button>
+    <button class="timeline-counter timeline-counter-planned ${feedStatusFilter === "planned" ? "is-active" : ""}" type="button" data-feed-filter="planned" aria-pressed="${feedStatusFilter === "planned"}">
       <i class="ti ti-calendar-event"></i>
       <span>Запланировано</span>
-      <strong>${tasks.length}</strong>
-    </span>
+      <strong>${planned.length}</strong>
+    </button>
   `;
 }
 
+function setFeedStatusFilter(filter) {
+  feedStatusFilter = feedStatusFilter === filter ? "all" : filter;
+  selectedTimelineDate = "";
+  renderToday();
+}
+
 function setTimelineDate(isoDate, options = {}) {
-  selectedTimelineDate = selectedTimelineDate === isoDate ? "" : (isoDate || "");
+  feedStatusFilter = "all";
+  selectedTimelineDate = isoDate || "";
   renderToday();
   if (options.scroll && selectedTimelineDate) {
     requestAnimationFrame(() => scrollFeedToDate(selectedTimelineDate));
@@ -341,11 +401,11 @@ function reminderCard(item, compact = false) {
     : item.diff === 0
       ? "Сегодня"
       : `Через ${item.diff} дн. - ${formatDate(item.task.nextDate)}`;
-  const title = `${TASK_LABELS[item.task.type] || item.task.type} - ${item.plant.name}`;
+  const title = `${workLabel(item.task.type)} - ${item.plant.name}`;
 
   return `
     <article class="reminder-card ${statusClass} ${compact ? "is-compact" : ""}">
-      <div class="task-icon task-${item.task.type}"><i class="ti ${TASK_ICONS[item.task.type] || "ti-calendar"}"></i></div>
+      <div class="task-icon task-${item.task.type}"><i class="ti ${workIcon(item.task.type)}"></i></div>
       <div class="reminder-info">
         <h3>${escapeHtml(title)}</h3>
         <p>${escapeHtml(dateText)} · ${escapeHtml(taskRepeatText(item.task))}${item.task.notes ? ` · ${escapeHtml(item.task.notes)}` : ""}</p>
@@ -364,12 +424,12 @@ function reminderCard(item, compact = false) {
 function timelineCard(item) {
   const statusClass = item.status === "overdue" ? "overdue-card" : item.status === "today" ? "today-card" : "";
   const preparations = getPreparations(item.task);
-  const workTitle = `${TASK_LABELS[item.task.type] || item.task.type} - ${item.plant.name}`;
+  const workTitle = `${workLabel(item.task.type)} - ${item.plant.name}`;
   const repeatText = taskRepeatText(item.task);
 
   return `
     <article class="reminder-card timeline-card ${statusClass}" data-feed-date="${escapeHtml(item.task.nextDate)}">
-      <div class="task-icon task-${item.task.type}"><i class="ti ${TASK_ICONS[item.task.type] || "ti-calendar"}"></i></div>
+      <div class="task-icon task-${item.task.type}"><i class="ti ${workIcon(item.task.type)}"></i></div>
       <div class="reminder-info">
         <h3>${escapeHtml(timelineDateTitle(item))}</h3>
         <p><strong>${escapeHtml(workTitle)}</strong> · ${escapeHtml(repeatText)}${item.task.notes ? ` · ${escapeHtml(item.task.notes)}` : ""}</p>
@@ -390,10 +450,10 @@ function historyFeedCard(entry, options = {}) {
   const preparationText = preparations.map((preparation) => preparation.name).join(" + ");
   return `
     <article class="reminder-card timeline-card history-card" data-feed-date="${escapeHtml(entry.doneDate)}" ${options.isLatest ? 'data-feed-anchor="latest-done"' : ""}>
-      <div class="task-icon task-${entry.taskType}"><i class="ti ${TASK_ICONS[entry.taskType] || "ti-history"}"></i></div>
+      <div class="task-icon task-${entry.taskType}"><i class="ti ${workIcon(entry.taskType)}"></i></div>
       <div class="reminder-info">
         <h3>${escapeHtml(formatDate(entry.doneDate))}</h3>
-        <p><strong>${escapeHtml(TASK_LABELS[entry.taskType] || entry.taskType)} - ${escapeHtml(entry.plantName)}</strong>${preparationText ? ` · ${escapeHtml(preparationText)}` : ""}${entry.note ? ` · ${escapeHtml(entry.note)}` : ""}</p>
+        <p><strong>${escapeHtml(workLabel(entry.taskType))} - ${escapeHtml(entry.plantName)}</strong>${preparationText ? ` · ${escapeHtml(preparationText)}` : ""}${entry.note ? ` · ${escapeHtml(entry.note)}` : ""}</p>
         ${preparationsInline(preparations)}
       </div>
       <div class="card-actions history-status">
@@ -422,7 +482,10 @@ function timelineDateTitle(item) {
 }
 
 function taskRepeatText(task) {
-  if (task.repeatMode === "again") {
+  if (task.repeatMode === "after") {
+    return `повторить через ${task.interval} дн.`;
+  }
+  if (task.repeatMode === "calendar" || task.repeatMode === "again") {
     return task.repeatDate ? `повторить ${formatDate(task.repeatDate)}` : "повторить один раз";
   }
   if (task.repeatMode === "repeat" || task.repeat === true) {
@@ -435,7 +498,7 @@ function scrollFeedToDate(isoDate) {
   const feed = els.upcomingList;
   const target = feed.querySelector(`[data-feed-date="${CSS.escape(isoDate)}"]`);
   if (!target) return;
-  target.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  feed.scrollTop = Math.max(0, target.offsetTop - feed.offsetTop - 8);
 }
 
 function scrollFeedToLatestDone() {
@@ -447,6 +510,20 @@ function scrollFeedToLatestDone() {
   }
 
   feed.scrollTop = Math.max(0, target.offsetTop - feed.offsetTop - 8);
+}
+
+function positionFeedAfterRender() {
+  if (selectedTimelineDate) {
+    scrollFeedToDate(selectedTimelineDate);
+    return;
+  }
+
+  if (feedStatusFilter === "planned") {
+    els.upcomingList.scrollTop = 0;
+    return;
+  }
+
+  scrollFeedToLatestDone();
 }
 
 function renderWeekStrip(tasks) {
@@ -496,7 +573,7 @@ function renderMiniLog() {
     <div class="mini-log-row">
       <span class="task-dot task-${entry.taskType}"></span>
       <div>
-        <strong>${escapeHtml(TASK_LABELS[entry.taskType] || entry.taskType)}</strong>
+        <strong>${escapeHtml(workLabel(entry.taskType))}</strong>
         <small>${escapeHtml(entry.plantName)} · ${formatDate(entry.doneDate)}${preparationLogText(entry)}</small>
       </div>
     </div>
@@ -514,6 +591,112 @@ function renderPreparations() {
   els.preparationGrid.innerHTML = preparations.length
     ? preparations.map(preparationCard).join("")
     : emptyState("Препараты пока не заведены");
+}
+
+function renderCultures() {
+  const cultures = (state.cultures || []).slice().sort((a, b) => a.name.localeCompare(b.name, "ru"));
+  els.cultureGrid.innerHTML = cultures.length
+    ? cultures.map(cultureCard).join("")
+    : emptyState("Культуры пока не добавлены");
+}
+
+function renderWorkTypes() {
+  const workTypes = getWorkTypes();
+  els.workTypeGrid.innerHTML = workTypes.length
+    ? workTypes.map(workTypeCard).join("")
+    : emptyState("Работы пока не добавлены");
+}
+
+function cultureCard(culture) {
+  return `
+    <article class="directory-card">
+      <div>
+        <h3>${escapeHtml(culture.name)}</h3>
+        <p>${escapeHtml(PLANT_TYPE_LABELS[culture.type] || culture.type)}</p>
+        ${culture.notes ? `<small>${escapeHtml(culture.notes)}</small>` : ""}
+      </div>
+      <div class="preparation-actions">
+        <button class="action-pill action-edit action-compact" type="button" data-action="edit-culture" data-culture-id="${escapeHtml(culture.id)}">
+          <i class="ti ti-pencil"></i> Настроить
+        </button>
+        <button class="action-pill action-delete action-compact" type="button" data-action="delete-culture" data-culture-id="${escapeHtml(culture.id)}">
+          <i class="ti ti-circle-minus"></i> Удалить
+        </button>
+      </div>
+    </article>
+  `;
+}
+
+function workTypeCard(workType) {
+  return `
+    <article class="directory-card">
+      <div>
+        <h3><i class="ti ${escapeHtml(workType.icon || "ti-calendar")}"></i> ${escapeHtml(workType.label)}</h3>
+        <p>Интервал по умолчанию: ${escapeHtml(String(workType.interval || 14))} дн.</p>
+      </div>
+      <div class="preparation-actions">
+        <button class="action-pill action-edit action-compact" type="button" data-action="edit-work-type" data-work-type-id="${escapeHtml(workType.id)}">
+          <i class="ti ti-pencil"></i> Настроить
+        </button>
+        <button class="action-pill action-delete action-compact" type="button" data-action="delete-work-type" data-work-type-id="${escapeHtml(workType.id)}">
+          <i class="ti ti-circle-minus"></i> Удалить
+        </button>
+      </div>
+    </article>
+  `;
+}
+
+function getWorkTypes() {
+  const customTypes = Array.isArray(state.workTypes) ? state.workTypes : [];
+  if (customTypes.length) {
+    return customTypes;
+  }
+
+  return Object.entries(TASK_LABELS).map(([id, label]) => ({
+    id,
+    label,
+    icon: TASK_ICONS[id] || "ti-calendar",
+    interval: DEFAULT_INTERVALS[id]?.other || 14,
+  }));
+}
+
+function getWorkType(type) {
+  return getWorkTypes().find((workType) => workType.id === type) || null;
+}
+
+function workLabel(type) {
+  return getWorkType(type)?.label || TASK_LABELS[type] || type;
+}
+
+function workIcon(type) {
+  return getWorkType(type)?.icon || TASK_ICONS[type] || "ti-calendar";
+}
+
+function defaultIntervalForWork(type, plantType = "other") {
+  return Number(getWorkType(type)?.interval || DEFAULT_INTERVALS[type]?.[plantType] || DEFAULT_INTERVALS[type]?.other || 14);
+}
+
+function workTypeOptions(selectedType = "") {
+  const workTypes = getWorkTypes().slice();
+  if (selectedType && !workTypes.some((workType) => workType.id === selectedType)) {
+    workTypes.push({
+      id: selectedType,
+      label: workLabel(selectedType),
+      icon: workIcon(selectedType),
+      interval: defaultIntervalForWork(selectedType),
+    });
+  }
+
+  return workTypes
+    .map((workType) => `<option value="${escapeHtml(workType.id)}">${escapeHtml(workType.label)}</option>`)
+    .join("");
+}
+
+function renderWorkTypeSelect(select, selectedType = "") {
+  select.innerHTML = workTypeOptions(selectedType);
+  if (selectedType) {
+    select.value = selectedType;
+  }
 }
 
 function preparationCard(preparation) {
@@ -589,7 +772,7 @@ function logMiniForPlant(entry) {
     <div class="work-mini">
       <span class="task-dot task-${entry.taskType}"></span>
       <div>
-        <strong>${escapeHtml(TASK_LABELS[entry.taskType] || entry.taskType)}</strong>
+        <strong>${escapeHtml(workLabel(entry.taskType))}</strong>
         <small>${formatDate(entry.doneDate)}${preparationLogText(entry)}${entry.note ? ` · ${escapeHtml(entry.note)}` : ""}</small>
       </div>
     </div>
@@ -606,7 +789,7 @@ function taskMini(task) {
     <div class="task-mini work-mini">
       <span class="task-dot task-${task.type}"></span>
       <div>
-        <strong>${escapeHtml(TASK_LABELS[task.type] || task.type)}</strong>
+        <strong>${escapeHtml(workLabel(task.type))}</strong>
         <small><span class="task-date ${dateClass}">${escapeHtml(dateText)}</span>${preparationText ? ` · ${escapeHtml(preparationText)}` : ""}${task.notes ? ` · ${escapeHtml(task.notes)}` : ""}</small>
       </div>
     </div>
@@ -619,7 +802,7 @@ function renderLog() {
     .filter((entry) => {
       if (!search) return true;
       const preparationNames = getPreparations(entry).map((preparation) => preparation.name).join(" ");
-      return [entry.plantName, TASK_LABELS[entry.taskType] || entry.taskType, preparationNames, entry.note]
+      return [entry.plantName, workLabel(entry.taskType), preparationNames, entry.note]
         .some((value) => String(value || "").toLowerCase().includes(search));
     })
     .sort((a, b) => b.doneDate.localeCompare(a.doneDate));
@@ -633,10 +816,10 @@ function logRow(entry) {
   const nextText = entry.nextScheduled ? ` · следующее ${formatDate(entry.nextScheduled)}` : " · без повторения";
   return `
     <article class="log-row">
-      <div class="task-icon task-${entry.taskType}"><i class="ti ${TASK_ICONS[entry.taskType] || "ti-calendar"}"></i></div>
+      <div class="task-icon task-${entry.taskType}"><i class="ti ${workIcon(entry.taskType)}"></i></div>
       <div>
         <h3>${escapeHtml(entry.plantName)}</h3>
-        <p>${escapeHtml(TASK_LABELS[entry.taskType] || entry.taskType)}${preparationText ? ` · ${escapeHtml(preparationText)}` : ""}${entry.note ? ` · ${escapeHtml(entry.note)}` : ""}${escapeHtml(nextText)}</p>
+        <p>${escapeHtml(workLabel(entry.taskType))}${preparationText ? ` · ${escapeHtml(preparationText)}` : ""}${entry.note ? ` · ${escapeHtml(entry.note)}` : ""}${escapeHtml(nextText)}</p>
         ${preparationsInline(preparations)}
       </div>
       <time>${formatDate(entry.doneDate)}</time>
@@ -775,6 +958,120 @@ function deletePreparation(preparation) {
   persistAndRender();
 }
 
+function onCultureGridClick(event) {
+  const button = event.target.closest("button[data-action]");
+  if (!button) return;
+  const culture = state.cultures.find((item) => item.id === button.dataset.cultureId);
+  if (!culture) return;
+
+  if (button.dataset.action === "edit-culture") {
+    openCultureDialog(culture);
+  }
+
+  if (button.dataset.action === "delete-culture") {
+    deleteCulture(culture);
+  }
+}
+
+function openCultureDialog(culture = null) {
+  els.cultureForm.reset();
+  els.cultureId.value = culture?.id || "";
+  els.cultureName.value = culture?.name || "";
+  els.cultureType.value = culture?.type || "flower";
+  els.cultureNotes.value = culture?.notes || "";
+  els.cultureDialogTitle.textContent = culture ? "Настроить культуру" : "Новая культура";
+  els.cultureDialog.showModal();
+}
+
+function saveCultureFromForm(event) {
+  event.preventDefault();
+  const id = els.cultureId.value || makeId("culture");
+  const culture = {
+    id,
+    name: els.cultureName.value.trim(),
+    type: els.cultureType.value || "other",
+    notes: els.cultureNotes.value.trim(),
+  };
+  if (!culture.name) return;
+
+  const existingIndex = state.cultures.findIndex((item) => item.id === id);
+  if (existingIndex >= 0) {
+    state.cultures[existingIndex] = culture;
+  } else {
+    state.cultures.push(culture);
+  }
+
+  els.cultureDialog.close();
+  persistAndRender();
+}
+
+function deleteCulture(culture) {
+  const confirmed = confirm(`Удалить культуру "${culture.name}" из справочника? Объекты и журнал не изменятся.`);
+  if (!confirmed) return;
+
+  state.cultures = state.cultures.filter((item) => item.id !== culture.id);
+  persistAndRender();
+}
+
+function onWorkTypeGridClick(event) {
+  const button = event.target.closest("button[data-action]");
+  if (!button) return;
+  const workType = getWorkTypes().find((item) => item.id === button.dataset.workTypeId);
+  if (!workType) return;
+
+  if (button.dataset.action === "edit-work-type") {
+    openWorkTypeDialog(workType);
+  }
+
+  if (button.dataset.action === "delete-work-type") {
+    deleteWorkType(workType);
+  }
+}
+
+function openWorkTypeDialog(workType = null) {
+  els.workTypeForm.reset();
+  els.workTypeId.value = workType?.id || "";
+  els.workTypeLabel.value = workType?.label || "";
+  els.workTypeInterval.value = workType?.interval || 14;
+  els.workTypeDialogTitle.textContent = workType ? "Настроить работу" : "Новая работа";
+  els.workTypeDialog.showModal();
+}
+
+function saveWorkTypeFromForm(event) {
+  event.preventDefault();
+  const id = els.workTypeId.value || makeId("work");
+  const existing = getWorkType(id);
+  const workType = {
+    id,
+    label: els.workTypeLabel.value.trim(),
+    icon: existing?.icon || TASK_ICONS[id] || "ti-calendar",
+    interval: Number(els.workTypeInterval.value || 14),
+  };
+  if (!workType.label) return;
+
+  const existingIndex = state.workTypes.findIndex((item) => item.id === id);
+  if (existingIndex >= 0) {
+    state.workTypes[existingIndex] = workType;
+  } else {
+    state.workTypes.push(workType);
+  }
+
+  els.workTypeDialog.close();
+  persistAndRender();
+}
+
+function deleteWorkType(workType) {
+  const inUse = state.plants.some((plant) => plant.tasks.some((task) => task.type === workType.id))
+    || state.log.some((entry) => entry.taskType === workType.id);
+  const message = inUse
+    ? `Удалить работу "${workType.label}" из справочника? Старые записи останутся, но в новых заданиях ее не будет.`
+    : `Удалить работу "${workType.label}"?`;
+  if (!confirm(message)) return;
+
+  state.workTypes = state.workTypes.filter((item) => item.id !== workType.id);
+  persistAndRender();
+}
+
 function openPlantDialog(plant = null) {
   els.plantForm.reset();
   els.taskRows.innerHTML = "";
@@ -795,15 +1092,15 @@ function addTaskRow(task = {}) {
   const node = els.taskRowTemplate.content.firstElementChild.cloneNode(true);
   const type = task.type || "water";
   node.querySelector(".task-id").value = task.id || "";
-  node.querySelector(".task-type").value = type;
+  renderWorkTypeSelect(node.querySelector(".task-type"), type);
   node.querySelector(".task-preparation").innerHTML = preparationOptions(getPreparationIds(task), null);
   node.querySelector(".task-next-date").value = task.nextDate || todayIso();
-  node.querySelector(".task-interval").value = task.interval || DEFAULT_INTERVALS[type]?.flower || 14;
+  node.querySelector(".task-interval").value = task.interval || defaultIntervalForWork(type, "flower");
   node.querySelector(".task-notes").value = task.notes || "";
   node.querySelector(".remove-task-btn").addEventListener("click", () => node.remove());
   node.querySelector(".task-type").addEventListener("change", (event) => {
     const plantType = document.querySelector("#plant-type").value;
-    node.querySelector(".task-interval").value = DEFAULT_INTERVALS[event.target.value]?.[plantType] || 14;
+    node.querySelector(".task-interval").value = defaultIntervalForWork(event.target.value, plantType);
   });
   els.taskRows.append(node);
 }
@@ -853,21 +1150,30 @@ function openDoneDialog(plant, task) {
   document.querySelector("#done-task-id").value = task.id;
   document.querySelector("#done-date").value = todayIso();
   document.querySelector("#done-note").value = task.notes || "";
-  els.doneMode.value = task.repeatMode === "again" ? "again" : task.repeatMode === "repeat" || task.repeat === true ? "repeat" : "stop";
+  els.doneMode.value = doneModeValue(task);
   els.doneRepeatDate.value = task.repeatDate || addCalendarDays(task.nextDate || todayIso(), Number(task.interval || 14));
   els.doneInterval.value = task.interval;
   updateDoneModeFields();
-  els.doneDialogTitle.textContent = `Сделано: ${TASK_LABELS[task.type] || task.type} - ${plant.name}`;
+  els.doneDialogTitle.textContent = `Сделано: ${workLabel(task.type)} - ${plant.name}`;
   els.doneDialog.showModal();
 }
 
 function updateDoneModeFields() {
   const mode = els.doneMode.value;
-  els.doneRepeatDateField.classList.toggle("is-hidden", mode !== "again");
-  els.doneIntervalField.classList.toggle("is-hidden", mode !== "repeat");
-  els.doneRepeatDate.required = mode === "again";
-  els.doneInterval.required = mode === "repeat";
-  els.doneInterval.disabled = mode !== "repeat";
+  const usesInterval = mode === "after" || mode === "repeat";
+  els.doneRepeatDateField.classList.toggle("is-hidden", mode !== "calendar");
+  els.doneIntervalField.classList.toggle("is-hidden", !usesInterval);
+  els.doneRepeatDate.required = mode === "calendar";
+  els.doneInterval.required = usesInterval;
+  els.doneInterval.disabled = !usesInterval;
+  els.doneIntervalLabel.textContent = mode === "after" ? "Повторить через, дней" : "Повторять каждые, дней";
+}
+
+function doneModeValue(task) {
+  if (task.repeatMode === "after") return "after";
+  if (task.repeatMode === "calendar" || task.repeatMode === "again") return "calendar";
+  if (task.repeatMode === "repeat" || task.repeat === true) return "repeat";
+  return "stop";
 }
 
 function openWorkDialog(options = {}) {
@@ -888,13 +1194,14 @@ function openWorkDialog(options = {}) {
   renderWorkPreparationPicker(getPreparationIds(existingTask || options));
   els.workType.value = type;
   els.workNextDate.value = existingTask?.nextDate || todayIso();
-  els.workRepeat.value = existingTask?.repeatMode || (existingTask ? (existingTask.repeat === false ? "once" : "repeat") : (options.repeat ? "repeat" : "once"));
-  els.workRepeatDate.value = existingTask?.repeatDate || addCalendarDays(existingTask?.nextDate || todayIso(), existingTask?.interval || DEFAULT_INTERVALS[type]?.[selectedPlant?.type || "other"] || 14);
-  els.workInterval.value = existingTask?.interval || DEFAULT_INTERVALS[type]?.[selectedPlant?.type || "other"] || 14;
+  els.workRepeat.value = workModeValue(existingTask, options);
+  renderWorkTypeSelect(els.workType, type);
+  els.workRepeatDate.value = existingTask?.repeatDate || addCalendarDays(existingTask?.nextDate || todayIso(), existingTask?.interval || defaultIntervalForWork(type, selectedPlant?.type || "other"));
+  els.workInterval.value = existingTask?.interval || defaultIntervalForWork(type, selectedPlant?.type || "other");
   els.workNotes.value = existingTask?.notes || "";
   els.workSubmitButton.textContent = isEditing ? "Сохранить" : "Запланировать";
   updateWorkModeFields({ resetInterval: false });
-  els.workDialogTitle.textContent = `${isEditing ? "Редактировать" : "Запланировать"}: ${TASK_LABELS[type] || "работа"}`;
+  els.workDialogTitle.textContent = `${isEditing ? "Редактировать" : "Запланировать"}: ${workLabel(type)}`;
   els.workDialog.showModal();
 }
 
@@ -979,15 +1286,25 @@ function updateWorkModeFields({ resetInterval = true } = {}) {
   const plant = state.plants.find((item) => item.id === els.workPlantId.value);
   const type = els.workType.value || "water";
   if (resetInterval) {
-    els.workInterval.value = DEFAULT_INTERVALS[type]?.[plant?.type || "other"] || 14;
+    els.workInterval.value = defaultIntervalForWork(type, plant?.type || "other");
   }
   const mode = els.workRepeat.value;
-  els.workRepeatDateField.classList.toggle("is-hidden", mode !== "again");
-  els.workIntervalField.classList.toggle("is-hidden", mode !== "repeat");
-  els.workRepeatDate.required = mode === "again";
-  els.workInterval.required = mode === "repeat";
-  els.workInterval.disabled = mode !== "repeat";
-  els.workDialogTitle.textContent = `${els.workTaskId.value ? "Редактировать" : "Запланировать"}: ${TASK_LABELS[type] || "работа"}`;
+  const usesInterval = mode === "after" || mode === "repeat";
+  els.workRepeatDateField.classList.toggle("is-hidden", mode !== "calendar");
+  els.workIntervalField.classList.toggle("is-hidden", !usesInterval);
+  els.workRepeatDate.required = mode === "calendar";
+  els.workInterval.required = usesInterval;
+  els.workInterval.disabled = !usesInterval;
+  els.workIntervalLabel.textContent = mode === "after" ? "Повторить через, дней" : "Повторять каждые, дней";
+  els.workDialogTitle.textContent = `${els.workTaskId.value ? "Редактировать" : "Запланировать"}: ${workLabel(type)}`;
+}
+
+function workModeValue(existingTask, options = {}) {
+  if (existingTask?.repeatMode === "after") return "after";
+  if (existingTask?.repeatMode === "calendar" || existingTask?.repeatMode === "again") return "calendar";
+  if (existingTask?.repeatMode === "repeat" || existingTask?.repeat === true) return "repeat";
+  if (existingTask) return "once";
+  return options.repeat ? "repeat" : "once";
 }
 
 function saveWorkFromForm(event) {
@@ -1010,7 +1327,7 @@ function saveWorkFromForm(event) {
     interval: Number(els.workInterval.value),
     repeat: els.workRepeat.value === "repeat",
     repeatMode: els.workRepeat.value,
-    repeatDate: els.workRepeat.value === "again" ? els.workRepeatDate.value : "",
+    repeatDate: els.workRepeat.value === "calendar" ? els.workRepeatDate.value : "",
     notes: els.workNotes.value,
   }, plant.type));
 
@@ -1033,7 +1350,7 @@ function saveDoneFromForm(event) {
     interval: Number(document.querySelector("#done-interval").value),
     repeat: document.querySelector("#done-mode").value === "repeat",
     repeatMode: document.querySelector("#done-mode").value,
-    repeatDate: document.querySelector("#done-repeat-date").value,
+    repeatDate: document.querySelector("#done-mode").value === "calendar" ? document.querySelector("#done-repeat-date").value : "",
   });
 
   state.log.push(logEntry);
@@ -1052,7 +1369,7 @@ function openPostponeDialogFromDoneDialog() {
   els.postponeDate.value = task.nextDate || todayIso();
   postponeCalendarMonth = getMonthStart(els.postponeDate.value);
   renderPostponeCalendar();
-  els.postponeDialogTitle.textContent = `Перенести: ${TASK_LABELS[task.type] || task.type} - ${plant.name}`;
+  els.postponeDialogTitle.textContent = `Перенести: ${workLabel(task.type)} - ${plant.name}`;
   els.doneDialog.close();
   els.postponeDialog.showModal();
 }

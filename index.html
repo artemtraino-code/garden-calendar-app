@@ -15,8 +15,10 @@
     </header>
 
     <nav class="tabs" aria-label="Основные разделы">
-      <button class="tab active" type="button" data-tab="today"><i class="ti ti-bell"></i> Дашборд</button>
+      <button class="tab active" type="button" data-tab="today"><i class="ti ti-bell"></i> Лента работ</button>
       <button class="tab" type="button" data-tab="objects"><i class="ti ti-plant"></i> Объекты</button>
+      <button class="tab" type="button" data-tab="cultures"><i class="ti ti-seeding"></i> Культуры</button>
+      <button class="tab" type="button" data-tab="work-types"><i class="ti ti-list-check"></i> Работы</button>
       <button class="tab" type="button" data-tab="preparations"><i class="ti ti-flask"></i> Препараты</button>
       <button class="tab" type="button" data-tab="log"><i class="ti ti-history"></i> Журнал</button>
     </nav>
@@ -27,12 +29,10 @@
           <section class="panel calendar-panel">
             <div class="panel-head timeline-head">
               <div class="timeline-title-filters">
-                <span class="timeline-title">Лента работ</span>
-                <div id="timeline-counters" class="timeline-counters" aria-label="Счетчики ленты работ"></div>
+                <div id="timeline-counters" class="timeline-counters" aria-label="Фильтры ленты работ"></div>
               </div>
               <div class="dashboard-actions dashboard-action-strip">
-                <button id="quick-add-plant-btn" class="primary-btn" type="button"><i class="ti ti-plus"></i> Посадка</button>
-                <button id="quick-add-work-btn" class="soft-btn" type="button"><i class="ti ti-calendar"></i> Запланировать</button>
+                <button id="quick-add-plant-btn" class="primary-btn" type="button"><i class="ti ti-plus"></i> Новое задание</button>
               </div>
             </div>
             <div class="week-carousel" aria-label="Выбор даты">
@@ -104,6 +104,32 @@
           <button id="clear-log-btn" class="soft-btn" type="button"><i class="ti ti-trash"></i> Очистить журнал</button>
         </div>
         <div id="log-list" class="log-section"></div>
+      </section>
+
+      <section id="tab-cultures" class="section">
+        <section class="panel directory-panel">
+          <div class="panel-head">
+            <div>
+              <span class="eyebrow">Справочник</span>
+              <h2>Культуры</h2>
+            </div>
+            <button id="add-culture-btn" class="primary-btn objects-add-btn" type="button"><i class="ti ti-plus"></i> Добавить культуру</button>
+          </div>
+          <div id="culture-grid" class="directory-grid"></div>
+        </section>
+      </section>
+
+      <section id="tab-work-types" class="section">
+        <section class="panel directory-panel">
+          <div class="panel-head">
+            <div>
+              <span class="eyebrow">Справочник</span>
+              <h2>Работы</h2>
+            </div>
+            <button id="add-work-type-btn" class="primary-btn objects-add-btn" type="button"><i class="ti ti-plus"></i> Добавить работу</button>
+          </div>
+          <div id="work-type-grid" class="directory-grid"></div>
+        </section>
       </section>
 
       <section id="tab-preparations" class="section">
@@ -202,8 +228,9 @@
             <span>Следующее повторение</span>
             <select id="done-mode">
               <option value="stop">Не повторять</option>
-              <option value="again">Повторить через</option>
+              <option value="after">Повторить через</option>
               <option value="repeat">Повторять каждые</option>
+              <option value="calendar">Повторить по календарю</option>
             </select>
           </label>
           <label id="done-repeat-date-field" class="field is-hidden">
@@ -211,7 +238,7 @@
             <input id="done-repeat-date" type="date">
           </label>
           <label id="done-interval-field" class="field">
-            <span>Интервал, дней</span>
+            <span id="done-interval-label">Интервал, дней</span>
             <input id="done-interval" type="number" min="1" max="365" required>
           </label>
         </div>
@@ -311,8 +338,9 @@
             <span>Режим</span>
             <select id="work-repeat">
               <option value="once">Не повторять</option>
-              <option value="again">Повторить через</option>
+              <option value="after">Повторить через</option>
               <option value="repeat">Повторять каждые</option>
+              <option value="calendar">Повторить по календарю</option>
             </select>
           </label>
           <label id="work-repeat-date-field" class="field is-hidden">
@@ -320,7 +348,7 @@
             <input id="work-repeat-date" type="date">
           </label>
           <label id="work-interval-field" class="field">
-            <span>Повторять каждые, дней</span>
+            <span id="work-interval-label">Повторять каждые, дней</span>
             <input id="work-interval" type="number" min="1" max="365" required>
           </label>
         </div>
@@ -395,6 +423,72 @@
 
         <div class="modal-actions">
           <button class="soft-btn" type="button" data-close-dialog="preparation-dialog">Отмена</button>
+          <button class="primary-btn" type="submit">Сохранить</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="culture-dialog" class="modal">
+      <form id="culture-form" method="dialog">
+        <div class="modal-head">
+          <h3 id="culture-dialog-title">Новая культура</h3>
+          <button class="icon-btn" type="button" data-close-dialog="culture-dialog" title="Закрыть">
+            <i class="ti ti-x"></i>
+          </button>
+        </div>
+
+        <input id="culture-id" type="hidden">
+
+        <label class="field">
+          <span>Название</span>
+          <input id="culture-name" type="text" placeholder="Петуния, томат, огурец" required>
+        </label>
+
+        <label class="field">
+          <span>Тип</span>
+          <select id="culture-type">
+            <option value="flower">Цветы</option>
+            <option value="veg">Овощи</option>
+            <option value="herb">Зелень</option>
+            <option value="other">Другое</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span>Заметки</span>
+          <textarea id="culture-notes" placeholder="Особенности культуры, сроки, важные условия"></textarea>
+        </label>
+
+        <div class="modal-actions">
+          <button class="soft-btn" type="button" data-close-dialog="culture-dialog">Отмена</button>
+          <button class="primary-btn" type="submit">Сохранить</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="work-type-dialog" class="modal">
+      <form id="work-type-form" method="dialog">
+        <div class="modal-head">
+          <h3 id="work-type-dialog-title">Новая работа</h3>
+          <button class="icon-btn" type="button" data-close-dialog="work-type-dialog" title="Закрыть">
+            <i class="ti ti-x"></i>
+          </button>
+        </div>
+
+        <input id="work-type-id" type="hidden">
+
+        <label class="field">
+          <span>Название</span>
+          <input id="work-type-label" type="text" placeholder="Полив, обработка, подкормка" required>
+        </label>
+
+        <label class="field">
+          <span>Интервал по умолчанию, дней</span>
+          <input id="work-type-interval" type="number" min="1" max="365" value="14" required>
+        </label>
+
+        <div class="modal-actions">
+          <button class="soft-btn" type="button" data-close-dialog="work-type-dialog">Отмена</button>
           <button class="primary-btn" type="submit">Сохранить</button>
         </div>
       </form>

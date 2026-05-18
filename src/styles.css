@@ -311,7 +311,8 @@ h1 {
 }
 
 .objects-panel,
-.preparations-panel {
+.preparations-panel,
+.directory-panel {
   padding: 14px;
 }
 
@@ -586,12 +587,6 @@ h1 {
   flex-wrap: wrap;
 }
 
-.timeline-title {
-  color: var(--green-dark);
-  font-size: 16px;
-  font-weight: 850;
-}
-
 .timeline-counters {
   display: flex;
   align-items: center;
@@ -608,11 +603,23 @@ h1 {
   border-radius: 999px;
   background: var(--surface);
   color: var(--muted);
+  cursor: pointer;
   padding: 5px 8px 5px 10px;
   font-size: 12px;
   font-weight: 850;
   line-height: 1;
   white-space: nowrap;
+}
+
+.timeline-counter:hover {
+  border-color: rgba(34, 122, 80, 0.36);
+  background: var(--surface-soft);
+}
+
+.timeline-counter.is-active {
+  border-color: var(--green);
+  background: var(--green-soft);
+  color: var(--green-dark);
 }
 
 .timeline-counter i {
@@ -872,15 +879,46 @@ h1 {
 }
 
 .plant-grid,
-.preparation-grid {
+.preparation-grid,
+.directory-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 12px;
 }
 
 .plant-card,
-.preparation-card {
+.preparation-card,
+.directory-card {
   padding: 14px;
+}
+
+.directory-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: start;
+}
+
+.directory-card h3 {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 5px;
+  color: var(--green-dark);
+  font-size: 16px;
+}
+
+.directory-card p,
+.directory-card small {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.directory-card small {
+  display: block;
+  margin-top: 7px;
+  line-height: 1.45;
 }
 
 .preparation-card {

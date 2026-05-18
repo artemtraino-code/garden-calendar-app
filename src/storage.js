@@ -1,4 +1,11 @@
-import { normalizePlant, normalizePreparation } from "./calendar.js";
+import {
+  DEFAULT_INTERVALS,
+  PLANT_TYPE_LABELS,
+  TASK_ICONS,
+  TASK_LABELS,
+  normalizePlant,
+  normalizePreparation,
+} from "./calendar.js";
 import { sampleLog, samplePlants, samplePreparations } from "./sample-data.js";
 
 const STORAGE_KEY = "garden-calendar-state-v11";
@@ -56,6 +63,8 @@ function createInitialState() {
     version: 1,
     plants: samplePlants,
     preparations: samplePreparations,
+    cultures: defaultCultures(),
+    workTypes: defaultWorkTypes(),
     log: sampleLog,
   });
 }
@@ -86,8 +95,53 @@ function normalizeState(state) {
     version: 1,
     plants: Array.isArray(state?.plants) ? state.plants.map(normalizePlant).filter((plant) => plant.name) : [],
     preparations: [...preparationMap.values()],
+    cultures: Array.isArray(state?.cultures) ? normalizeCultures(state.cultures) : defaultCultures(),
+    workTypes: Array.isArray(state?.workTypes) ? normalizeWorkTypes(state.workTypes) : defaultWorkTypes(),
     log: Array.isArray(state?.log) ? state.log : [],
   };
+}
+
+function defaultWorkTypes() {
+  return Object.entries(TASK_LABELS).map(([id, label]) => ({
+    id,
+    label,
+    icon: TASK_ICONS[id] || "ti-calendar",
+    interval: Number(DEFAULT_INTERVALS[id]?.other || 14),
+  }));
+}
+
+function defaultCultures() {
+  return [
+    { id: "culture_petunia", name: "Петуния", type: "flower", notes: "" },
+    { id: "culture_catharanthus", name: "Катарантус", type: "flower", notes: "" },
+    { id: "culture_begonia", name: "Бегония", type: "flower", notes: "" },
+    { id: "culture_tomato", name: "Помидоры", type: "veg", notes: "" },
+    { id: "culture_pepper", name: "Перцы", type: "veg", notes: "" },
+    { id: "culture_cucumber", name: "Огурцы", type: "veg", notes: "" },
+    { id: "culture_corn", name: "Кукуруза", type: "veg", notes: "" },
+  ];
+}
+
+function normalizeWorkTypes(workTypes) {
+  return workTypes
+    .map((workType) => ({
+      id: String(workType?.id || "").trim(),
+      label: String(workType?.label || workType?.name || "").trim(),
+      icon: String(workType?.icon || TASK_ICONS[workType?.id] || "ti-calendar").trim(),
+      interval: Number(workType?.interval || DEFAULT_INTERVALS[workType?.id]?.other || 14),
+    }))
+    .filter((workType) => workType.id && workType.label);
+}
+
+function normalizeCultures(cultures) {
+  return cultures
+    .map((culture) => ({
+      id: String(culture?.id || "").trim(),
+      name: String(culture?.name || "").trim(),
+      type: PLANT_TYPE_LABELS[culture?.type] ? culture.type : "other",
+      notes: String(culture?.notes || "").trim(),
+    }))
+    .filter((culture) => culture.id && culture.name);
 }
 
 function isBundledDemoState(state) {

@@ -115,9 +115,9 @@ export function getAllTasks(plants, baseIso = todayIso()) {
 
 export function completeTask({ plant, task, doneDate, note, interval, repeat, repeatMode, repeatDate }) {
   const mode = repeatMode || (repeat ? "repeat" : "stop");
-  const nextScheduled = mode === "repeat"
+  const nextScheduled = mode === "repeat" || mode === "after"
     ? addDays(doneDate, interval)
-    : mode === "again"
+    : mode === "calendar" || mode === "again"
       ? repeatDate || task.repeatDate || ""
       : "";
   const preparationIds = normalizePreparationIds(task);
@@ -139,8 +139,9 @@ export function completeTask({ plant, task, doneDate, note, interval, repeat, re
     task.repeat = true;
     task.repeatMode = "repeat";
     task.repeatDate = "";
-  } else if (mode === "again" && nextScheduled) {
+  } else if ((mode === "after" || mode === "calendar" || mode === "again") && nextScheduled) {
     task.nextDate = nextScheduled;
+    task.interval = Number(interval || task.interval || 14);
     task.repeat = false;
     task.repeatMode = "once";
     task.repeatDate = "";
@@ -199,6 +200,7 @@ function normalizePreparationIds(task) {
 }
 
 function normalizeRepeatMode(task) {
-  if (["once", "again", "repeat"].includes(task?.repeatMode)) return task.repeatMode;
+  if (["once", "after", "repeat", "calendar"].includes(task?.repeatMode)) return task.repeatMode;
+  if (task?.repeatMode === "again") return "calendar";
   return task?.repeat === false ? "once" : "repeat";
 }
