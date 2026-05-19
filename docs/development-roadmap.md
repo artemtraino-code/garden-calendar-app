@@ -85,8 +85,8 @@ Goal: duplicate planned garden tasks into Google Calendar for mobile notificatio
 
 Tasks:
 
-1. Add a backend sync layer.
-2. Implement Google OAuth.
+1. Finish Supabase backend sync layer.
+2. Implement Google OAuth through Supabase Auth.
 3. Store `googleEventId` on synced tasks.
 4. Create Google Calendar events for planned tasks.
 5. Update events when date/status/title changes.

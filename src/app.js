@@ -15,6 +15,7 @@ import {
   todayIso,
 } from "./calendar.js";
 import { loadState, saveState } from "./storage.js";
+import { initializeAuth } from "./auth.js";
 
 if ("serviceWorker" in navigator && !["localhost", "127.0.0.1"].includes(window.location.hostname)) {
   window.addEventListener("load", () => {
@@ -27,6 +28,7 @@ if ("serviceWorker" in navigator && !["localhost", "127.0.0.1"].includes(window.
 let state = loadState();
 state.preparations ||= [];
 state.workTypes ||= [];
+let remoteStore = null;
 let activeTab = "today";
 let activeSettingsTab = "objects";
 let dashboardView = "timeline";
@@ -270,9 +272,23 @@ const els = {
   workTypeInterval: document.querySelector("#work-type-interval"),
 };
 
-ensureDefaultPlantGroups();
-bindEvents();
-render();
+boot();
+
+async function boot() {
+  const auth = await initializeAuth({ fallbackState: state });
+  if (!auth.canUseApp) return;
+
+  if (auth.state) {
+    state = auth.state;
+    state.preparations ||= [];
+    state.workTypes ||= [];
+  }
+
+  remoteStore = auth.store || null;
+  ensureDefaultPlantGroups();
+  bindEvents();
+  render();
+}
 
 function bindEvents() {
   document.querySelectorAll(".tab").forEach((tab) => {
@@ -459,6 +475,7 @@ function setDashboardView(view) {
 
 function persistAndRender() {
   saveState(state);
+  remoteStore?.saveState(state);
   render();
 }
 

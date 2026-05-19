@@ -12,17 +12,40 @@
     <link rel="manifest" href="./manifest.webmanifest">
     <link rel="icon" href="./src/assets/app-icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="./src/assets/app-icon.svg">
-    <link rel="stylesheet" href="./src/styles.css?v=20260520-pwa-1">
+    <link rel="stylesheet" href="./src/styles.css?v=20260520-auth-2">
   </head>
   <body>
-    <header class="app-header">
-      <div>
-        <h1><i class="ti ti-plant-2"></i> Огородный календарь</h1>
-        <p id="today-label" class="header-subtitle"></p>
+    <section id="auth-screen" class="auth-screen is-hidden" aria-label="Вход в приложение">
+      <div class="auth-card">
+        <div class="auth-mark">
+          <img src="./src/assets/app-icon.svg" alt="">
+        </div>
+        <div class="auth-copy">
+          <p class="eyebrow">Огородный календарь</p>
+          <h1>Вход в общую базу</h1>
+          <p>Данные календаря доступны только пользователям, которых одобрил администратор.</p>
+        </div>
+        <p id="auth-status" class="auth-status" data-tone="muted">Проверяем доступ...</p>
+        <button id="auth-google-btn" class="primary-btn auth-google-btn" type="button">
+          <span>G</span>
+          Войти через Google
+        </button>
       </div>
-    </header>
+    </section>
 
-    <nav class="tabs" aria-label="Основные разделы">
+    <div id="app-shell">
+      <header class="app-header">
+        <div>
+          <h1><i class="ti ti-plant-2"></i> Огородный календарь</h1>
+          <p id="today-label" class="header-subtitle"></p>
+        </div>
+        <div class="auth-user">
+          <span id="auth-user-label"></span>
+          <button id="auth-sign-out-btn" class="soft-btn auth-sign-out is-hidden" type="button">Выйти</button>
+        </div>
+      </header>
+
+      <nav class="tabs" aria-label="Основные разделы">
       <div class="tabs-main">
         <button class="tab active" type="button" data-tab="today"><i class="ti ti-bell"></i> График работ</button>
         <button id="open-settings-btn" class="tab tab-settings" type="button"><i class="ti ti-settings"></i> Настройки</button>
@@ -30,9 +53,9 @@
       <div class="tabs-actions">
         <button id="quick-add-plant-btn" class="primary-btn tabs-primary-btn" type="button"><i class="ti ti-plus"></i> Новое задание</button>
       </div>
-    </nav>
+      </nav>
 
-    <main>
+      <main>
       <section id="tab-today" class="section active">
         <div class="dashboard-grid">
           <section class="panel calendar-panel">
@@ -98,7 +121,8 @@
         </div>
         <div id="log-list" class="log-section"></div>
       </section>
-    </main>
+      </main>
+    </div>
 
     <dialog id="settings-dialog" class="modal settings-dialog">
       <div class="modal-head">
@@ -559,6 +583,6 @@
       </div>
     </template>
 
-    <script type="module" src="./src/app.js?v=20260520-pwa-1"></script>
+    <script type="module" src="./src/app.js?v=20260520-auth-2"></script>
   </body>
 </html>

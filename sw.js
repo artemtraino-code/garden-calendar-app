@@ -1,12 +1,14 @@
-const CACHE_NAME = "garden-calendar-app-20260520-pwa-1";
+const CACHE_NAME = "garden-calendar-app-20260520-auth-1";
 
 const APP_SHELL = [
   "./",
   "./index.html",
   "./manifest.webmanifest",
   "./src/app.js",
+  "./src/auth.js",
   "./src/calendar.js",
   "./src/sample-data.js",
+  "./src/supabase-config.js",
   "./src/storage.js",
   "./src/styles.css",
   "./src/assets/app-icon.svg",

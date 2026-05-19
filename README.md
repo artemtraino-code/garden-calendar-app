@@ -62,7 +62,7 @@ http://localhost:5199/
 
 - данные пока хранятся только локально в браузере;
 - полноценного backend-слоя пока нет;
-- синхронизации между устройствами пока нет;
+- синхронизация между устройствами подготовлена через Supabase, но требует создания проекта и заполнения `src/supabase-config.js`;
 - push / Telegram / Google Calendar интеграции пока нет;
 - текущий этап — стабилизация механик и сборка единой внутренней архитектуры приложения.
 
@@ -76,8 +76,11 @@ http://localhost:5199/
 - [src/styles.css](C:/Users/artem/OneDrive/Документы/seeds/garden-calendar-app/src/styles.css)
 - [manifest.webmanifest](C:/Users/artem/OneDrive/Документы/seeds/garden-calendar-app/manifest.webmanifest)
 - [sw.js](C:/Users/artem/OneDrive/Документы/seeds/garden-calendar-app/sw.js)
+- [src/auth.js](C:/Users/artem/OneDrive/Документы/seeds/garden-calendar-app/src/auth.js)
+- [src/supabase-config.js](C:/Users/artem/OneDrive/Документы/seeds/garden-calendar-app/src/supabase-config.js)
 
 ## GitHub
 
 - инструкция для подключения отдельного репозитория лежит в [docs/github-setup.md](C:/Users/artem/OneDrive/Документы/seeds/garden-calendar-app/docs/github-setup.md);
+- инструкция для Supabase/Auth лежит в [docs/supabase-setup.md](C:/Users/artem/OneDrive/Документы/seeds/garden-calendar-app/docs/supabase-setup.md);
 - перед следующей крупной переработкой интерфейса ориентироваться на [docs/app-blueprint.md](C:/Users/artem/OneDrive/Документы/seeds/garden-calendar-app/docs/app-blueprint.md).

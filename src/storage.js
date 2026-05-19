@@ -67,7 +67,7 @@ function createInitialState() {
   });
 }
 
-function normalizeState(state) {
+export function normalizeState(state) {
   const hasPreparations = Array.isArray(state?.preparations);
   const hasPlants = Array.isArray(state?.plants);
   const samplePlantMap = new Map(
