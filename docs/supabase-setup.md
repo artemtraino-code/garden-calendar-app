@@ -82,18 +82,30 @@ create table if not exists public.garden_app_state (
 alter table public.app_members enable row level security;
 alter table public.garden_app_state enable row level security;
 
+grant usage on schema public to authenticated;
+grant select on public.app_members to authenticated;
+grant select, insert, update on public.garden_app_state to authenticated;
+
 create or replace function public.current_user_email()
 returns text
 language sql
 stable
+security definer
+set search_path = public, auth
 as $$
-  select lower(coalesce(auth.jwt() ->> 'email', ''));
+  select lower(coalesce(
+    (select email from auth.users where id = auth.uid()),
+    auth.jwt() ->> 'email',
+    ''
+  ));
 $$;
 
 create or replace function public.is_approved_member()
 returns boolean
 language sql
 stable
+security definer
+set search_path = public, auth
 as $$
   select exists (
     select 1
@@ -107,6 +119,8 @@ create or replace function public.is_admin_member()
 returns boolean
 language sql
 stable
+security definer
+set search_path = public, auth
 as $$
   select exists (
     select 1
@@ -116,6 +130,10 @@ as $$
       and role = 'admin'
   );
 $$;
+
+grant execute on function public.current_user_email() to authenticated;
+grant execute on function public.is_approved_member() to authenticated;
+grant execute on function public.is_admin_member() to authenticated;
 
 drop policy if exists "Approved members can read members" on public.app_members;
 create policy "Approved members can read members"
