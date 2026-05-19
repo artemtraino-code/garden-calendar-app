@@ -16,6 +16,14 @@ import {
 } from "./calendar.js";
 import { loadState, saveState } from "./storage.js";
 
+if ("serviceWorker" in navigator && !["localhost", "127.0.0.1"].includes(window.location.hostname)) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js").catch(() => {
+      // The app should keep working even when the browser blocks service workers.
+    });
+  });
+}
+
 let state = loadState();
 state.preparations ||= [];
 state.workTypes ||= [];

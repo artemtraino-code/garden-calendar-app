@@ -45,6 +45,19 @@ python -m http.server 5199
 http://localhost:5199/
 ```
 
+## Публикация
+
+Бюджетный первый вариант публикации - GitHub Pages.
+
+- репозиторий: `artemtraino-code/garden-calendar-app`;
+- сайт после включения Pages будет открываться как статическое веб-приложение;
+- приложение подготовлено как PWA: есть `manifest.webmanifest`, `sw.js` и иконка;
+- service worker не включается на `localhost`, чтобы при разработке не застревала старая версия.
+
+Инструкция и порядок включения Pages:
+
+- [docs/deployment.md](C:/Users/artem/OneDrive/Документы/seeds/garden-calendar-app/docs/deployment.md)
+
 ## Текущие ограничения
 
 - данные пока хранятся только локально в браузере;
@@ -61,6 +74,8 @@ http://localhost:5199/
 - [src/storage.js](C:/Users/artem/OneDrive/Документы/seeds/garden-calendar-app/src/storage.js)
 - [src/sample-data.js](C:/Users/artem/OneDrive/Документы/seeds/garden-calendar-app/src/sample-data.js)
 - [src/styles.css](C:/Users/artem/OneDrive/Документы/seeds/garden-calendar-app/src/styles.css)
+- [manifest.webmanifest](C:/Users/artem/OneDrive/Документы/seeds/garden-calendar-app/manifest.webmanifest)
+- [sw.js](C:/Users/artem/OneDrive/Документы/seeds/garden-calendar-app/sw.js)
 
 ## GitHub
 

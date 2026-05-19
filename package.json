@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "python -m http.server 5199",
-    "check": "node --check src/app.js && node --check src/calendar.js && node --check src/storage.js && node --check src/sample-data.js"
+    "check": "node --check src/app.js && node --check src/calendar.js && node --check src/storage.js && node --check src/sample-data.js && node --check sw.js"
   },
   "devDependencies": {
     "playwright": "^1.60.0"
