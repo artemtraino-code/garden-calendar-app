@@ -1,4 +1,4 @@
-const CACHE_NAME = "garden-calendar-app-20260520-auth-1";
+const CACHE_NAME = "garden-calendar-app-20260520-auth-3";
 
 const APP_SHELL = [
   "./",

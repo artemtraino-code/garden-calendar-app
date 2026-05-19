@@ -1,5 +1,5 @@
-import { normalizeState } from "./storage.js";
-import { SUPABASE_CONFIG } from "./supabase-config.js";
+import { normalizeState } from "./storage.js?v=20260520-auth-3";
+import { SUPABASE_CONFIG } from "./supabase-config.js?v=20260520-auth-3";
 
 const SUPABASE_CLIENT_URL = "https://esm.sh/@supabase/supabase-js@2";
 

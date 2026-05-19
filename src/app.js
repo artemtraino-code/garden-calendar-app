@@ -13,9 +13,9 @@ import {
   normalizeTask,
   systemTaskStatus,
   todayIso,
-} from "./calendar.js";
-import { loadState, saveState } from "./storage.js";
-import { initializeAuth } from "./auth.js";
+} from "./calendar.js?v=20260520-auth-3";
+import { loadState, saveState } from "./storage.js?v=20260520-auth-3";
+import { initializeAuth } from "./auth.js?v=20260520-auth-3";
 
 if ("serviceWorker" in navigator && !["localhost", "127.0.0.1"].includes(window.location.hostname)) {
   window.addEventListener("load", () => {
