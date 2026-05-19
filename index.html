@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Огородный календарь</title>
-    <link rel="stylesheet" href="./src/styles.css">
+    <link rel="stylesheet" href="./src/styles.css?v=20260519-work-batch-2">
   </head>
   <body>
     <header class="app-header">
@@ -15,11 +15,13 @@
     </header>
 
     <nav class="tabs" aria-label="Основные разделы">
-      <button class="tab active" type="button" data-tab="today"><i class="ti ti-bell"></i> Лента работ</button>
-      <button class="tab" type="button" data-tab="objects"><i class="ti ti-plant"></i> Цветы и овощи</button>
-      <button class="tab" type="button" data-tab="work-types"><i class="ti ti-list-check"></i> Работы</button>
-      <button class="tab" type="button" data-tab="preparations"><i class="ti ti-flask"></i> Препараты</button>
-      <button class="tab" type="button" data-tab="log"><i class="ti ti-history"></i> Журнал</button>
+      <div class="tabs-main">
+        <button class="tab active" type="button" data-tab="today"><i class="ti ti-bell"></i> График работ</button>
+        <button id="open-settings-btn" class="tab tab-settings" type="button"><i class="ti ti-settings"></i> Настройки</button>
+      </div>
+      <div class="tabs-actions">
+        <button id="quick-add-plant-btn" class="primary-btn tabs-primary-btn" type="button"><i class="ti ti-plus"></i> Новое задание</button>
+      </div>
     </nav>
 
     <main>
@@ -29,9 +31,6 @@
             <div class="panel-head timeline-head">
               <div class="timeline-title-filters">
                 <div id="timeline-counters" class="timeline-counters" aria-label="Переход по статусам ленты работ"></div>
-              </div>
-              <div class="dashboard-actions dashboard-action-strip">
-                <button id="quick-add-plant-btn" class="primary-btn" type="button"><i class="ti ti-plus"></i> Новое задание</button>
               </div>
             </div>
             <div class="week-carousel" aria-label="Выбор даты">
@@ -81,18 +80,6 @@
         </div>
       </section>
 
-      <section id="tab-objects" class="section">
-        <section class="panel objects-panel">
-          <div class="panel-head">
-            <div>
-              <h2>Цветы и овощи</h2>
-            </div>
-            <button id="add-plant-btn" class="primary-btn objects-add-btn" type="button"><i class="ti ti-plus"></i> Добавить культуру</button>
-          </div>
-          <div id="plant-grid" class="plant-grid"></div>
-        </section>
-      </section>
-
       <section id="tab-log" class="section">
         <div class="toolbar">
           <div class="search-wrap">
@@ -103,32 +90,54 @@
         </div>
         <div id="log-list" class="log-section"></div>
       </section>
-
-      <section id="tab-work-types" class="section">
-        <section class="panel directory-panel">
-          <div class="panel-head">
-            <div>
-              <h2>Работы</h2>
-            </div>
-            <button id="add-work-type-btn" class="primary-btn objects-add-btn" type="button"><i class="ti ti-plus"></i> Добавить работу</button>
-          </div>
-          <div id="work-type-grid" class="directory-grid"></div>
-        </section>
-      </section>
-
-      <section id="tab-preparations" class="section">
-        <section class="panel preparations-panel">
-          <div class="panel-head">
-            <div>
-              <span class="eyebrow">Справочник</span>
-              <h2>Препараты</h2>
-            </div>
-            <button id="add-preparation-btn" class="primary-btn objects-add-btn" type="button"><i class="ti ti-plus"></i> Добавить препарат</button>
-          </div>
-          <div id="preparation-grid" class="preparation-grid"></div>
-        </section>
-      </section>
     </main>
+
+    <dialog id="settings-dialog" class="modal settings-dialog">
+      <div class="modal-head">
+        <h3>Настройки</h3>
+        <button class="icon-btn" type="button" data-close-dialog="settings-dialog" title="Закрыть">
+          <i class="ti ti-x"></i>
+        </button>
+      </div>
+
+      <div class="settings-tab-bar" aria-label="Разделы настроек">
+        <button class="settings-tab active" type="button" data-settings-tab="objects"><i class="ti ti-plant"></i> Культуры и группы</button>
+        <button class="settings-tab" type="button" data-settings-tab="work-types"><i class="ti ti-list-check"></i> Работы</button>
+        <button class="settings-tab" type="button" data-settings-tab="preparations"><i class="ti ti-flask"></i> Препараты</button>
+      </div>
+
+      <div class="settings-dialog-body">
+        <section id="settings-tab-objects" class="settings-section active">
+          <section class="panel objects-panel">
+            <div id="plant-grid" class="plant-grid"></div>
+          </section>
+        </section>
+
+        <section id="settings-tab-work-types" class="settings-section">
+          <section class="panel directory-panel">
+            <div class="panel-head">
+              <div>
+                <h2>Работы</h2>
+              </div>
+              <button id="add-work-type-btn" class="primary-btn objects-add-btn" type="button"><i class="ti ti-plus"></i> Добавить работу</button>
+            </div>
+            <div id="work-type-grid" class="directory-grid"></div>
+          </section>
+        </section>
+
+        <section id="settings-tab-preparations" class="settings-section">
+          <section class="panel preparations-panel">
+            <div class="panel-head">
+              <div>
+                <h2>Препараты</h2>
+              </div>
+              <button id="add-preparation-btn" class="primary-btn objects-add-btn" type="button"><i class="ti ti-plus"></i> Добавить препарат</button>
+            </div>
+            <div id="preparation-grid" class="preparation-grid"></div>
+          </section>
+        </section>
+      </div>
+    </dialog>
 
     <dialog id="plant-dialog" class="modal">
       <form id="plant-form" method="dialog">
@@ -140,31 +149,28 @@
         </div>
 
         <input id="plant-id" type="hidden">
+        <input id="plant-entry-kind" type="hidden">
+        <input id="plant-type" type="hidden">
+        <input id="plant-type-label" type="hidden">
 
         <label class="field">
           <span>Название</span>
-          <input id="plant-name" type="text" placeholder="Петунии, томаты и перцы, огурцы" required>
+          <input id="plant-name" type="text" placeholder="Петунии, томаты и перцы, огурцы" autocomplete="off" required>
         </label>
 
-        <div class="form-grid">
-          <label class="field">
-            <span>Тип</span>
-            <select id="plant-type">
-              <option value="flower">Цветы</option>
-              <option value="veg">Овощи</option>
-              <option value="herb">Зелень</option>
-              <option value="other">Другое</option>
-            </select>
-          </label>
-          <label class="field">
-            <span>Дата посадки / учета</span>
-            <input id="plant-planted" type="date">
-          </label>
-        </div>
-
-        <label class="field">
-          <span>Место</span>
-          <input id="plant-location" type="text" placeholder="Теплица, грядка, терраса">
+        <label id="plant-groups-field" class="field">
+          <span>Группы</span>
+          <div class="multi-combo" data-plant-combo="groups">
+            <button id="plant-group-trigger" class="multi-combo-trigger" type="button">Выбрать группы</button>
+            <div id="plant-group-panel" class="combo-suggestions multi-combo-panel is-hidden">
+              <div class="multi-combo-search-wrap">
+                <input id="plant-group-search" type="search" placeholder="Поиск групп">
+              </div>
+              <div id="plant-group-options" class="multi-combo-options"></div>
+            </div>
+            <select id="plant-group-ids" multiple hidden></select>
+          </div>
+          <div id="plant-group-selection" class="combo-selection-chips is-empty"></div>
         </label>
 
         <div class="field icon-field">
@@ -173,16 +179,20 @@
           <div id="plant-icon-picker" class="icon-picker" aria-label="Выбор иконки культуры"></div>
         </div>
 
-        <label class="field">
-          <span>Заметки</span>
-          <textarea id="plant-notes" placeholder="Сорт, количество, особенности ухода"></textarea>
-        </label>
-
-        <div class="task-editor-head">
-          <span>План работ</span>
-          <button id="add-task-row-btn" class="soft-btn" type="button"><i class="ti ti-plus"></i> Добавить работу</button>
+        <div id="group-members-field" class="field is-hidden">
+          <span>Культуры в группе</span>
+          <div class="multi-combo" data-plant-combo="members">
+            <button id="group-member-trigger" class="multi-combo-trigger" type="button">Добавить культуры</button>
+            <div id="group-member-panel" class="combo-suggestions multi-combo-panel is-hidden">
+              <div class="multi-combo-search-wrap">
+                <input id="group-member-search" type="search" placeholder="Поиск культур">
+              </div>
+              <div id="group-member-options" class="multi-combo-options"></div>
+            </div>
+            <select id="group-member-ids" multiple hidden></select>
+          </div>
+          <div id="group-members-list" class="group-members-list"></div>
         </div>
-        <div id="task-rows" class="task-rows"></div>
 
         <div class="modal-actions">
           <button class="soft-btn" type="button" data-close-dialog="plant-dialog">Отмена</button>
@@ -297,66 +307,113 @@
         </div>
 
         <input id="work-task-id" type="hidden">
+        <input id="work-log-id" type="hidden">
 
-        <label class="field">
-          <span>Культура / группа</span>
-          <select id="work-plant-id" required></select>
-        </label>
-
-        <div class="form-grid">
-          <label class="field">
+        <div class="form-grid form-grid-topline form-grid-work-statusline">
+          <label class="field field-status-inline">
             <span>Статус</span>
-            <select id="work-status">
+            <select id="work-status" class="status-select status-select-planned">
               <option value="planned">Запланировано</option>
+              <option value="missed">Пропущено</option>
               <option value="done">Выполнено</option>
             </select>
           </label>
+        </div>
+
+        <div class="form-grid form-grid-topline">
+          <label class="field">
+            <span>Группа</span>
+            <div class="multi-combo" data-multi-combo="group">
+              <button id="work-plant-group-trigger" class="multi-combo-trigger" type="button">Выбрать группу</button>
+              <div id="work-plant-group-panel" class="combo-suggestions multi-combo-panel is-hidden">
+                <div class="multi-combo-search-wrap">
+                  <input id="work-plant-group-search" type="search" placeholder="Поиск групп">
+                </div>
+                <div id="work-plant-group-options" class="multi-combo-options"></div>
+              </div>
+              <select id="work-plant-group" required hidden></select>
+            </div>
+            <div id="work-plant-group-selection" class="combo-selection-chips is-empty"></div>
+          </label>
+
+          <label class="field">
+            <span>Культура</span>
+            <div class="multi-combo" data-multi-combo="plant">
+              <button id="work-plant-id-trigger" class="multi-combo-trigger" type="button">Выбрать культуру</button>
+              <div id="work-plant-id-panel" class="combo-suggestions multi-combo-panel is-hidden">
+                <div class="multi-combo-search-wrap">
+                  <input id="work-plant-id-search" type="search" placeholder="Поиск культур">
+                </div>
+                <div id="work-plant-id-options" class="multi-combo-options"></div>
+              </div>
+              <select id="work-plant-id" required hidden></select>
+            </div>
+            <div id="work-plant-id-selection" class="combo-selection-chips is-empty"></div>
+          </label>
+        </div>
+
+        <div class="form-grid">
           <label class="field">
             <span>Работа</span>
-            <select id="work-type">
-              <option value="plant">Посадка</option>
-              <option value="water">Полив</option>
-              <option value="feed">Подкормка</option>
-              <option value="treat">Обработка</option>
-              <option value="prune">Обрезка</option>
-              <option value="inspect">Осмотр</option>
-              <option value="harvest">Сбор</option>
-              <option value="repot">Пересадка</option>
-            </select>
+            <div class="multi-combo" data-multi-combo="type">
+              <button id="work-type-trigger" class="multi-combo-trigger" type="button">Выбрать работу</button>
+              <div id="work-type-panel" class="combo-suggestions multi-combo-panel is-hidden">
+                <div class="multi-combo-search-wrap">
+                  <input id="work-type-search" type="search" placeholder="Поиск работ">
+                </div>
+                <div id="work-type-options" class="multi-combo-options"></div>
+              </div>
+              <select id="work-type" hidden>
+                <option value="plant">Посадка</option>
+                <option value="water">Полив</option>
+                <option value="feed">Подкормка</option>
+                <option value="treat">Обработка</option>
+                <option value="prune">Обрезка</option>
+                <option value="inspect">Осмотр</option>
+                <option value="harvest">Сбор</option>
+                <option value="repot">Пересадка</option>
+              </select>
+            </div>
           </label>
           <label class="field">
             <span>Дата</span>
             <input id="work-next-date" type="date" required>
           </label>
         </div>
+        <div id="work-type-selection" class="combo-selection-chips work-type-selection-row is-empty"></div>
 
         <div class="form-grid">
           <label class="field">
-            <span>Режим</span>
+            <span>График</span>
             <select id="work-repeat">
               <option value="once">Не повторять</option>
+              <option value="calendar">Повторить один раз</option>
               <option value="after">Повторить через</option>
               <option value="repeat">Повторять каждые</option>
-              <option value="calendar">Повторить по календарю</option>
             </select>
           </label>
-          <label id="work-repeat-date-field" class="field is-hidden">
-            <span>Дата повторения</span>
-            <input id="work-repeat-date" type="date">
-          </label>
-          <label id="work-interval-field" class="field">
-            <span id="work-interval-label">Повторять каждые, дней</span>
-            <input id="work-interval" type="number" min="1" max="365" required>
+          <label id="work-repeat-detail-field" class="field">
+            <span id="work-repeat-detail-label">Повторение</span>
+            <input id="work-repeat-static" class="field-readonly" type="text" readonly value="Не повторять">
+            <input id="work-repeat-date" class="field-control is-hidden" type="date">
+            <input id="work-interval" class="field-control is-hidden" type="number" min="1" max="365">
           </label>
         </div>
 
         <div class="field">
           <span>Препараты</span>
-          <div class="preparation-picker-row">
-            <select id="work-preparation-id"></select>
-            <button id="add-work-preparation-btn" class="soft-btn" type="button">
-              <i class="ti ti-plus"></i> Добавить
-            </button>
+          <div class="preparation-picker-row preparation-picker-stack">
+            <div class="multi-combo" data-multi-combo="preparation">
+              <button id="work-preparation-trigger" class="multi-combo-trigger" type="button">Выбрать препараты</button>
+              <div id="work-preparation-panel" class="combo-suggestions multi-combo-panel is-hidden">
+                <div class="multi-combo-search-wrap">
+                  <input id="work-preparation-search" type="search" placeholder="Поиск препаратов">
+                </div>
+                <div id="work-preparation-options" class="multi-combo-options"></div>
+              </div>
+              <select id="work-preparation-id" multiple hidden></select>
+            </div>
+            <small class="field-help">Откройте список и отметьте нужные препараты галочками.</small>
           </div>
         </div>
         <div id="work-preparation-preview" class="preparation-selection is-empty"></div>
@@ -367,8 +424,14 @@
         </label>
 
         <div class="modal-actions">
-          <button class="soft-btn" type="button" data-close-dialog="work-dialog">Отмена</button>
-          <button id="work-submit-btn" class="primary-btn" type="submit">Запланировать</button>
+          <div class="modal-actions-left">
+            <button id="work-delete-btn" class="action-pill action-delete is-hidden" type="button">Удалить</button>
+            <button id="work-repeat-btn" class="action-pill action-plan is-hidden" type="button"><i class="ti ti-calendar"></i> Повторить</button>
+          </div>
+          <div class="modal-actions-group">
+            <button class="soft-btn" type="button" data-close-dialog="work-dialog">Отмена</button>
+            <button id="work-submit-btn" class="primary-btn" type="submit">Запланировать</button>
+          </div>
         </div>
       </form>
     </dialog>
@@ -384,12 +447,11 @@
 
         <input id="preparation-id" type="hidden">
 
-        <label class="field">
-          <span>Название</span>
-          <input id="preparation-name" type="text" placeholder="Топас, Вертимек, Мегафол" required>
-        </label>
-
         <div class="form-grid">
+          <label class="field">
+            <span>Название</span>
+            <input id="preparation-name" type="text" placeholder="Топас, Вертимек, Мегафол" required>
+          </label>
           <label class="field">
             <span>Тип</span>
             <select id="preparation-category">
@@ -402,16 +464,28 @@
               <option value="other">Другое</option>
             </select>
           </label>
-          <label class="field">
-            <span>Картинка</span>
-            <input id="preparation-image" type="url" placeholder="Ссылка на фото товара">
+        </div>
+
+        <div class="field">
+          <span>Картинка</span>
+          <input id="preparation-image" type="hidden">
+          <label class="image-upload-field" for="preparation-image-file">
+            <input id="preparation-image-file" type="file" accept="image/*">
+            <div id="preparation-image-upload" class="image-upload-card"></div>
           </label>
         </div>
 
-        <label class="field">
-          <span>Дозировка</span>
-          <input id="preparation-dosage" type="text" placeholder="Например: 2 мл на 1 л воды по листу">
-        </label>
+        <div class="form-grid">
+          <label class="field">
+            <span>Дозировка</span>
+            <input id="preparation-dosage" type="text" placeholder="Например: 2 мл на 1 л воды по листу">
+          </label>
+
+          <label class="field">
+            <span>Срок ожидания</span>
+            <input id="preparation-waiting-period" type="text" placeholder="Например: 7 дней, 10-14 дней, не требуется">
+          </label>
+        </div>
 
         <label class="field">
           <span>Описание</span>
@@ -439,11 +513,6 @@
         <label class="field">
           <span>Название</span>
           <input id="work-type-label" type="text" placeholder="Полив, обработка, подкормка" required>
-        </label>
-
-        <label class="field">
-          <span>Интервал по умолчанию, дней</span>
-          <input id="work-type-interval" type="number" min="1" max="365" value="14" required>
         </label>
 
         <div class="field icon-field">
@@ -482,6 +551,6 @@
       </div>
     </template>
 
-    <script type="module" src="./src/app.js"></script>
+    <script type="module" src="./src/app.js?v=20260519-work-batch-2"></script>
   </body>
 </html>

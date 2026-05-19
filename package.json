@@ -6,5 +6,8 @@
   "scripts": {
     "start": "python -m http.server 5177",
     "check": "node --check src/app.js && node --check src/calendar.js && node --check src/storage.js && node --check src/sample-data.js"
+  },
+  "devDependencies": {
+    "playwright": "^1.60.0"
   }
 }

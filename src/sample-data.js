@@ -3,7 +3,7 @@ export const samplePreparations = [
     "id": "prep_store_osmocote_bloom",
     "name": "Osmocote Bloom (для петуній) до 3 місяців (0,5 кг)",
     "category": "fertilizer",
-    "image": "https://seeds.dp.ua/wp-content/uploads/2023/09/Osmokote-bloom-1.webp",
+    "image": "./src/assets/preparations/prep_store_osmocote_bloom.webp",
     "dosage": "Уточнить по инструкции препарата перед применением",
     "description": "Упаковка: пакет 0,5 кг. Дозировка: Уточнить по инструкции препарата перед применением. Назначение: для квітучих рослин у невеликих контейнерах із циклом 6-12 тижнів."
   },
@@ -11,7 +11,7 @@ export const samplePreparations = [
     "id": "prep_store_kaltsinit_kaltsievaya_selitra",
     "name": "Кальцієва Селітра (Кальциніт) ВИРОБНИК YARA (0,5 кг)",
     "category": "fertilizer",
-    "image": "https://seeds.dp.ua/wp-content/uploads/2019/08/calcinid.webp",
+    "image": "./src/assets/preparations/prep_store_kaltsinit_kaltsievaya_selitra.webp",
     "dosage": "1 столова ложка (приблизно 25 г) на 10 л води",
     "description": "Упаковка: пакет 0,5 кг. Дозировка: 1 столова ложка (приблизно 25 г) на 10 л води. Назначение: для підживлення кальцієм і профілактики кальцієвого дефіциту."
   },
@@ -19,7 +19,7 @@ export const samplePreparations = [
     "id": "prep_master_202020",
     "name": "Мастер NPK 20-20-20 Valagro (0,5 кг)",
     "category": "fertilizer",
-    "image": "https://seeds.dp.ua/wp-content/uploads/2020/08/Master20-3.webp",
+    "image": "./src/assets/preparations/prep_master_202020.webp",
     "dosage": "1 ст. ложка на 10 л води (під корінь)",
     "description": "Упаковка: пакет 0,5 кг. Дозировка: 1 ст. ложка на 10 л води (під корінь). Назначение: для регулярного кореневого підживлення квітів, розсади й овочів."
   },
@@ -27,7 +27,7 @@ export const samplePreparations = [
     "id": "prep_store_monofosfat_kaliya",
     "name": "Монофосфат Калію ВИРОБНИК YARA NPK 0-52-34 (0,5 кг)",
     "category": "fertilizer",
-    "image": "https://seeds.dp.ua/wp-content/uploads/2019/08/Monofosfat-1.webp",
+    "image": "./src/assets/preparations/prep_store_monofosfat_kaliya.webp",
     "dosage": "1 столова ложка (приблизно 25 г) на 10 л води",
     "description": "Упаковка: пакет 0,5 кг. Дозировка: 1 столова ложка (приблизно 25 г) на 10 л води. Назначение: для кореневого та листкового підживлення розсади, квітів і овочів."
   },
@@ -35,7 +35,7 @@ export const samplePreparations = [
     "id": "prep_store_plantafol_20_20_20",
     "name": "Plantafol 20.20.20 Valagro (0,25 кг)",
     "category": "fertilizer",
-    "image": "https://seeds.dp.ua/wp-content/uploads/2024/09/plantafol-1.webp",
+    "image": "./src/assets/preparations/prep_store_plantafol_20_20_20.webp",
     "dosage": "1 ст. ложка на 10 л води (по листу)",
     "description": "Упаковка: пакет 0,25 кг. Дозировка: 1 ст. ложка на 10 л води (по листу). Назначение: для листкового підживлення під час активної вегетації."
   },
@@ -43,7 +43,7 @@ export const samplePreparations = [
     "id": "prep_store_brexil_ca",
     "name": "Brexil Ca Valagro (100 г)",
     "category": "fertilizer",
-    "image": "https://seeds.dp.ua/wp-content/uploads/2025/07/brexil-ca25.webp",
+    "image": "./src/assets/preparations/prep_store_brexil_ca.webp",
     "dosage": "15-20 г на 10 л води",
     "description": "Упаковка: розфасовано в 100 г пакетик. Дозировка: 15-20 г на 10 л води. Назначение: для листкового внесення при нестачі кальцію та ризику вершинної гнилі."
   },
@@ -51,7 +51,7 @@ export const samplePreparations = [
     "id": "prep_store_brexil_mix",
     "name": "Brexil MIX Valagro (100 г)",
     "category": "fertilizer",
-    "image": "https://seeds.dp.ua/wp-content/uploads/2025/07/brexil-MIX2025.webp",
+    "image": "./src/assets/preparations/prep_store_brexil_mix.webp",
     "dosage": "10-20 г на 10 л води",
     "description": "Упаковка: розфасовано в 100 г пакетик. Дозировка: 10-20 г на 10 л води. Назначение: для корекції нестачі мікроелементів через листок."
   },
@@ -59,23 +59,25 @@ export const samplePreparations = [
     "id": "prep_vertimek",
     "name": "Вертімек 018-ЄС (10 мл)",
     "category": "insecticide",
-    "image": "https://seeds.dp.ua/wp-content/uploads/2022/08/vertymek-2.webp",
+    "image": "./src/assets/preparations/prep_vertimek.webp",
     "dosage": "для квітів і овочів: 2 мл на 1 л води (по листу)",
+    "waitingPeriod": "7 дней (овощи, клубника), 14 дней (яблоня)",
     "description": "Упаковка: 10 мл. Дозировка: для квітів і овочів: 2 мл на 1 л води (по листу). Назначение: проти кліщів, мінерів, трипсів, попелиць і медяниць."
   },
   {
     "id": "prep_previkur",
     "name": "Магнікур Енерджи Превікур (10 мл)",
     "category": "fungicide",
-    "image": "https://seeds.dp.ua/wp-content/uploads/2019/08/Magnikur-Enerdzhi-2.webp",
+    "image": "./src/assets/preparations/prep_previkur.webp",
     "dosage": "1,5 мл на 1 л води (під корінь або по листу)",
+    "waitingPeriod": "20 дней",
     "description": "Упаковка: розфасований в герметичну бутилочку 10 мл. Дозировка: 1,5 мл на 1 л води (під корінь або по листу). Назначение: проти кореневих гнилей, чорної ніжки та пероноспорозу."
   },
   {
     "id": "prep_store_ukorinyuvach_ryzopon",
     "name": "Ризопон (10 г)",
     "category": "stimulant",
-    "image": "https://seeds.dp.ua/wp-content/uploads/2025/07/Ryzopon.webp",
+    "image": "./src/assets/preparations/prep_store_ukorinyuvach_ryzopon.webp",
     "dosage": "Уточнить по инструкции препарата перед применением",
     "description": "Упаковка: розфасовано в 10 г пакетики. Дозировка: Уточнить по инструкции препарата перед применением. Назначение: для вкорінення живців декоративних і плодових культур."
   },
@@ -83,15 +85,16 @@ export const samplePreparations = [
     "id": "prep_store_teppeki_teppeki_insektitsid",
     "name": "Теппекі 50 wg (3 гр)",
     "category": "insecticide",
-    "image": "https://seeds.dp.ua/wp-content/uploads/2021/08/Teppeki-pak.webp",
+    "image": "./src/assets/preparations/prep_store_teppeki_teppeki_insektitsid.webp",
     "dosage": "3 г на 10 л води (по листу)",
+    "waitingPeriod": "до 30 дней",
     "description": "Упаковка: 3 г (розфасовано в дрібні пакетики). Дозировка: 3 г на 10 л води (по листу). Назначение: проти попелиць і білокрилки на овочевих, декоративних та інших культурах."
   },
   {
     "id": "prep_store_biostimulyator_radifarm",
     "name": "Радіфарм+ (25 мл)",
     "category": "stimulant",
-    "image": "https://seeds.dp.ua/wp-content/uploads/2020/08/Radifarm-4.webp",
+    "image": "./src/assets/preparations/prep_store_biostimulyator_radifarm.webp",
     "dosage": "25 мл на 10 л води (під корінь)",
     "description": "Упаковка: 25 мл. Дозировка: 25 мл на 10 л води (під корінь). Назначение: для розвитку коренів і зменшення стресу після пересаджування."
   },
@@ -99,7 +102,7 @@ export const samplePreparations = [
     "id": "prep_megafol",
     "name": "Мегафол+ 25 мл Valagro",
     "category": "stimulant",
-    "image": "https://seeds.dp.ua/wp-content/uploads/2019/08/Megafol.webp",
+    "image": "./src/assets/preparations/prep_megafol.webp",
     "dosage": "2,5 мл на 1 л води (по листу)",
     "description": "Упаковка: 25 мл. Дозировка: 2,5 мл на 1 л води (по листу). Назначение: для відновлення після пересадки, спеки, холоду, граду, гербіцидного або іншого стресу."
   },
@@ -107,7 +110,7 @@ export const samplePreparations = [
     "id": "prep_store_biostymulyator_izabion",
     "name": "Ізабіон Syngenta 20 мл",
     "category": "stimulant",
-    "image": "https://seeds.dp.ua/wp-content/uploads/2025/07/izabion2.webp",
+    "image": "./src/assets/preparations/prep_store_biostymulyator_izabion.webp",
     "dosage": "20 мл на 5 л води",
     "description": "Упаковка: 20 мл. Дозировка: 20 мл на 5 л води. Назначение: для росту, відновлення після стресу, цвітіння та формування плодів."
   },
@@ -115,7 +118,7 @@ export const samplePreparations = [
     "id": "prep_store_prylypach_glyusten",
     "name": "Глюстен 25 мл Syngenta",
     "category": "adjuvant",
-    "image": "https://seeds.dp.ua/wp-content/uploads/2025/07/glusten-aduvant-kopyya.webp",
+    "image": "./src/assets/preparations/prep_store_prylypach_glyusten.webp",
     "dosage": "25 мл на 10 л води",
     "description": "Упаковка: 25 мл. Дозировка: 25 мл на 10 л води. Назначение: для покращення змочування, розподілу і поглинання ЗЗР."
   },
@@ -123,7 +126,7 @@ export const samplePreparations = [
     "id": "prep_store_kvantum_quantum",
     "name": "Квантум / QUANTUM (10 мл)",
     "category": "adjuvant",
-    "image": "https://seeds.dp.ua/wp-content/uploads/2024/09/qwantum.webp",
+    "image": "./src/assets/preparations/prep_store_kvantum_quantum.webp",
     "dosage": "10 мл на 10 л води",
     "description": "Упаковка: 10 мл. Дозировка: 10 мл на 10 л води. Назначение: для кращого покриття листка робочим розчином."
   },
@@ -131,128 +134,144 @@ export const samplePreparations = [
     "id": "prep_store_protrujnyk_antyhrushh",
     "name": "Антихрущ (10 мл) Укравіт",
     "category": "insecticide",
-    "image": "https://seeds.dp.ua/wp-content/uploads/2025/07/antihrusch.webp",
+    "image": "./src/assets/preparations/prep_store_protrujnyk_antyhrushh.webp",
     "dosage": "10 мл на 3–10 л води залежно від культури",
+    "waitingPeriod": "30 дней",
     "description": "Упаковка: 10 мл. Дозировка: 10 мл на 3–10 л води залежно від культури. Назначение: проти ґрунтових шкідників, личинок хрущів, дротяників, капустянки та частини наземних шкідників."
   },
   {
     "id": "prep_store_sanmajt",
     "name": "Санмайт акарицид (9 г)",
     "category": "insecticide",
-    "image": "https://seeds.dp.ua/wp-content/uploads/2024/09/Sanmajt-akaratsyd.webp",
+    "image": "./src/assets/preparations/prep_store_sanmajt.webp",
     "dosage": "1 г на 1 л води",
+    "waitingPeriod": "30 дней",
     "description": "Упаковка: 9 г. Дозировка: 1 г на 1 л води. Назначение: проти рослиноїдних кліщів на різних стадіях розвитку."
   },
   {
     "id": "prep_store_aktelik",
     "name": "Актелік (6 мл)",
     "category": "insecticide",
-    "image": "https://seeds.dp.ua/wp-content/uploads/2024/09/Aktellik-4.webp",
+    "image": "./src/assets/preparations/prep_store_aktelik.webp",
     "dosage": "6 мл на 5 л води",
+    "waitingPeriod": "14 дней",
     "description": "Упаковка: 6 мл. Дозировка: 6 мл на 5 л води. Назначение: проти широкого спектра шкідників, зокрема приховано живучих."
   },
   {
     "id": "prep_store_ampligo",
     "name": "Ампліго, 4 мл ( від тлі та ін шкідників)",
     "category": "insecticide",
-    "image": "https://seeds.dp.ua/wp-content/uploads/2022/08/Ampligo.webp",
+    "image": "./src/assets/preparations/prep_store_ampligo.webp",
     "dosage": "4 мл на 5 л води (по листу)",
+    "waitingPeriod": "14 дней",
     "description": "Упаковка: 4 мл. Дозировка: 4 мл на 5 л води (по листу). Назначение: проти лускокрилих, попелиць, цикадок та інших шкідників за культурами реєстрації."
   },
   {
     "id": "prep_store_proklejm_4_g_syngenta_insektytsyd_zahyst_vid_lystogryzuchyh_shkidnykiv",
     "name": "Проклейм 4 г",
     "category": "insecticide",
-    "image": "https://seeds.dp.ua/wp-content/uploads/2024/09/Proklejm-1.webp",
+    "image": "./src/assets/preparations/prep_store_proklejm_4_g_syngenta_insektytsyd_zahyst_vid_lystogryzuchyh_shkidnykiv.webp",
     "dosage": "4 г на 5 л води",
+    "waitingPeriod": "7 дней",
     "description": "Упаковка: 4 г. Дозировка: 4 г на 5 л води. Назначение: проти листогризучих шкідників, особливо гусениць лускокрилих."
   },
   {
     "id": "prep_store_insektytsyd_enzhio",
     "name": "Енжіо (3,6 мл) Syngenta",
     "category": "insecticide",
-    "image": "https://seeds.dp.ua/wp-content/uploads/2025/07/Enzhio-1.webp",
+    "image": "./src/assets/preparations/prep_store_insektytsyd_enzhio.webp",
     "dosage": "3,6 мл на 10 л води",
+    "waitingPeriod": "14 дней",
     "description": "Упаковка: 3,6 мл. Дозировка: 3,6 мл на 10 л води. Назначение: для комплексного захисту від сисних і листогризучих шкідників."
   },
   {
     "id": "prep_store_insektytsyd_tempo",
     "name": "Темпо (3 г)",
     "category": "insecticide",
-    "image": "https://seeds.dp.ua/wp-content/uploads/2025/07/Temno.webp",
+    "image": "./src/assets/preparations/prep_store_insektytsyd_tempo.webp",
     "dosage": "3 г на 8-10 л води",
+    "waitingPeriod": "14 дней",
     "description": "Упаковка: 3 г. Дозировка: 3 г на 8-10 л води. Назначение: проти попелиць, білокрилки, трипсів і щитівок."
   },
   {
     "id": "prep_aktara",
     "name": "Актара (1,4 г)",
     "category": "insecticide",
-    "image": "https://seeds.dp.ua/wp-content/uploads/2019/08/Aktara-1.webp",
+    "image": "./src/assets/preparations/prep_aktara.webp",
     "dosage": "1,4 г на 4 л води (під корінь або по листу)",
+    "waitingPeriod": "7-10 дней",
     "description": "Упаковка: 1,4 г. Дозировка: 1,4 г на 4 л води (під корінь або по листу). Назначение: проти сисних і частини листогризучих шкідників, можливе листкове та ґрунтове застосування за регламентом."
   },
   {
     "id": "prep_store_ridomil_gold_fungitsyd",
     "name": "Рідоміл Голд фунгіцид (25 г)",
     "category": "fungicide",
-    "image": "https://seeds.dp.ua/wp-content/uploads/2023/09/rydomil-gold.webp",
+    "image": "./src/assets/preparations/prep_store_ridomil_gold_fungitsyd.webp",
     "dosage": "Уточнить по инструкции препарата перед применением",
+    "waitingPeriod": "10-14 дней",
     "description": "Упаковка: 25 г. Дозировка: Уточнить по инструкции препарата перед применением. Назначение: проти фітофторозу, пероноспорозу та альтернаріозу за культурами реєстрації."
   },
   {
     "id": "prep_store_fungitsyd_svitch",
     "name": "Світч 10 г Syngenta",
     "category": "fungicide",
-    "image": "https://seeds.dp.ua/wp-content/uploads/2025/07/Svitch.webp",
+    "image": "./src/assets/preparations/prep_store_fungitsyd_svitch.webp",
     "dosage": "10 г на 5–10 л води залежно від культури",
+    "waitingPeriod": "7 дней",
     "description": "Упаковка: 10 г. Дозировка: 10 г на 5–10 л води залежно від культури. Назначение: проти сірої та плодової гнилей, плямистостей і частини інших грибкових хвороб за культурами реєстрації."
   },
   {
     "id": "prep_store_kvadris",
     "name": "Квадріс (6 мл)",
     "category": "fungicide",
-    "image": "https://seeds.dp.ua/wp-content/uploads/2022/08/kvadris-250-k-s.webp",
+    "image": "./src/assets/preparations/prep_store_kvadris.webp",
     "dosage": "6 мл на 5 л води (по листу)",
+    "waitingPeriod": "5 дней",
     "description": "Упаковка: 6 мл. Дозировка: 6 мл на 5 л води (по листу). Назначение: проти грибкових хвороб овочевих, плодових і декоративних культур за інструкцією."
   },
   {
     "id": "prep_store_fungitsyd_revus_top",
     "name": "Ревус Топ (6 мл)",
     "category": "fungicide",
-    "image": "https://seeds.dp.ua/wp-content/uploads/2024/09/Revus-top.webp",
+    "image": "./src/assets/preparations/prep_store_fungitsyd_revus_top.webp",
     "dosage": "6 мл на 5 л води",
+    "waitingPeriod": "14 дней",
     "description": "Упаковка: 6 мл. Дозировка: 6 мл на 5 л води. Назначение: проти альтернаріозу і фітофторозу картоплі та інших листових хвороб за регламентом."
   },
   {
     "id": "prep_store_fungitsyd_signum",
     "name": "Сігнум 6 г Яровіт Сервіс (BASF)",
     "category": "fungicide",
-    "image": "https://seeds.dp.ua/wp-content/uploads/2025/07/Signum.webp",
+    "image": "./src/assets/preparations/prep_store_fungitsyd_signum.webp",
     "dosage": "6 г на 5 л води",
+    "waitingPeriod": "14 дней",
     "description": "Упаковка: 6 г. Дозировка: 6 г на 5 л води. Назначение: проти альтернаріозу, сірої гнилі, плямистостей та інших хвороб за культурами реєстрації."
   },
   {
     "id": "prep_topas",
     "name": "Топаз (3 мл)",
     "category": "fungicide",
-    "image": "https://seeds.dp.ua/wp-content/uploads/2019/08/topaz-preparat.webp",
+    "image": "./src/assets/preparations/prep_topas.webp",
     "dosage": "Уточнить по инструкции препарата перед применением",
+    "waitingPeriod": "14 дней",
     "description": "Упаковка: 3 мл. Дозировка: Уточнить по инструкции препарата перед применением. Назначение: проти борошнистої роси та частини інших грибкових хвороб."
   },
   {
     "id": "prep_store_horus_fungitsyd",
     "name": "Хорус фунгіцид, 3 г",
     "category": "fungicide",
-    "image": "https://seeds.dp.ua/wp-content/uploads/2023/09/Horus.webp",
+    "image": "./src/assets/preparations/prep_store_horus_fungitsyd.webp",
     "dosage": "Уточнить по инструкции препарата перед применением",
+    "waitingPeriod": "7 дней",
     "description": "Упаковка: 3 г. Дозировка: Уточнить по инструкции препарата перед применением. Назначение: для ранньовесняного захисту плодових від комплексу хвороб."
   },
   {
     "id": "prep_store_skor",
     "name": "Скор (2 мл)",
     "category": "fungicide",
-    "image": "https://seeds.dp.ua/wp-content/uploads/2022/08/Skor.webp",
+    "image": "./src/assets/preparations/prep_store_skor.webp",
     "dosage": "3-5 мл на 10 л води (3 мл профілактично, 5 мл при ознаках хвороби)",
+    "waitingPeriod": "14 дней",
     "description": "Упаковка: 2 мл. Дозировка: 3-5 мл на 10 л води (3 мл профілактично, 5 мл при ознаках хвороби). Назначение: проти комплексу хвороб яблуні, груші, персика, томатів, картоплі та інших культур за даними Syngenta."
   },
   {

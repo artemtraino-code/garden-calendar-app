@@ -106,7 +106,18 @@ function normalizeState(state) {
 
   samplePreparationMap.forEach((samplePreparation, id) => {
     const existingPreparation = preparationMap.get(id);
-    preparationMap.set(id, existingPreparation ? { ...existingPreparation, ...samplePreparation } : samplePreparation);
+    if (!existingPreparation) {
+      preparationMap.set(id, samplePreparation);
+      return;
+    }
+
+    const preferBundledImage = String(existingPreparation.image || "").includes("seeds.dp.ua")
+      && String(samplePreparation.image || "").includes("./src/assets/preparations/");
+    preparationMap.set(id, {
+      ...existingPreparation,
+      ...samplePreparation,
+      image: preferBundledImage ? samplePreparation.image : (existingPreparation.image || samplePreparation.image),
+    });
   });
 
   return {
