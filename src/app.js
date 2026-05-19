@@ -729,14 +729,23 @@ function timelineCard(group) {
   const statusClass = item.status === "overdue" ? "overdue-card" : item.status === "today" ? "today-card" : "";
   const preparations = getPreparations(item.task);
   const titleDate = timelineDateTitle(item);
-  const titleMain = timelineTitleMainHtml(group.workTypes, group.plantNames, item.plant);
+  const workLine = timelineWorkLineHtml(group.workTypes);
+  const plantLine = timelinePlantLineHtml(group.plantNames, item.plant);
 
   return `
     <article class="reminder-card timeline-card ${statusClass}" data-feed-date="${escapeHtml(item.task.nextDate)}">
       <div class="reminder-info">
-        <h3 data-fit-title><span class="timeline-title-date">${escapeHtml(titleDate)}</span>${titleMain}</h3>
-        ${item.task.notes ? `<p class="timeline-note-lead">${escapeHtml(item.task.notes)}</p>` : ""}
-        ${preparations.length ? `<div class="timeline-preparations">${preparationsInline(preparations)}</div>` : ""}
+        <div class="timeline-card-grid">
+          <div class="timeline-card-main">
+            <h3><span class="timeline-title-date">${escapeHtml(titleDate)}</span></h3>
+            <p class="timeline-work-line" data-fit-title>${workLine}</p>
+            <p class="timeline-plant-line">${plantLine}</p>
+          </div>
+          <div class="timeline-card-side ${!preparations.length && item.task.notes ? "timeline-card-side-note-only" : ""}">
+            ${preparations.length ? `<div class="timeline-preparations">${preparationsInline(preparations)}</div>` : ""}
+            ${item.task.notes ? `<p class="timeline-note-lead">${escapeHtml(item.task.notes)}</p>` : ""}
+          </div>
+        </div>
       </div>
       <div class="card-actions timeline-card-actions">
         ${completionButton(item)}
@@ -750,13 +759,22 @@ function historyFeedCard(group, options = {}) {
   const preparations = getPreparations(entry);
   const titleDate = formatDate(entry.doneDate);
   const linkedPlant = state.plants.find((plant) => plant.id === entry.plantId) || { name: entry.plantName, type: "other", icon: "" };
-  const titleMain = timelineTitleMainHtml(group.workTypes, group.plantNames, linkedPlant);
+  const workLine = timelineWorkLineHtml(group.workTypes);
+  const plantLine = timelinePlantLineHtml(group.plantNames, linkedPlant);
   return `
     <article class="reminder-card timeline-card history-card" data-feed-date="${escapeHtml(entry.doneDate)}" ${options.isLatest ? 'data-feed-anchor="latest-done"' : ""}>
       <div class="reminder-info">
-        <h3 data-fit-title><span class="timeline-title-date">${escapeHtml(titleDate)}</span>${titleMain}</h3>
-        ${entry.note ? `<p class="timeline-note-lead">${escapeHtml(entry.note)}</p>` : ""}
-        ${preparations.length ? `<div class="timeline-preparations">${preparationsInline(preparations)}</div>` : ""}
+        <div class="timeline-card-grid">
+          <div class="timeline-card-main">
+            <h3><span class="timeline-title-date">${escapeHtml(titleDate)}</span></h3>
+            <p class="timeline-work-line" data-fit-title>${workLine}</p>
+            <p class="timeline-plant-line">${plantLine}</p>
+          </div>
+          <div class="timeline-card-side ${!preparations.length && entry.note ? "timeline-card-side-note-only" : ""}">
+            ${preparations.length ? `<div class="timeline-preparations">${preparationsInline(preparations)}</div>` : ""}
+            ${entry.note ? `<p class="timeline-note-lead">${escapeHtml(entry.note)}</p>` : ""}
+          </div>
+        </div>
       </div>
       <div class="card-actions timeline-card-actions history-status">
         <button class="action-pill action-done action-status" type="button" data-action="edit-log" data-log-id="${entry.id}" title="Редактировать запись">
@@ -774,23 +792,26 @@ function completionButton(item) {
   return `<button class="action-pill action-planned action-status" type="button" data-action="edit-task" data-plant-id="${item.plant.id}" data-task-id="${item.task.id}" title="Редактировать задание"><i class="ti ti-calendar"></i> Запланировано</button>`;
 }
 
-function timelineTitleMainHtml(workTypes, plantNames, plant) {
+function timelineWorkLineHtml(workTypes) {
   const workLabelText = joinUniqueLabels(workTypes.map((type) => workLabel(type)));
-  const plantLabelText = joinUniqueLabels(plantNames);
   const firstWorkType = workTypes[0] || "water";
-  return `<span class="timeline-title-flow"><span class="task-icon task-${escapeHtml(firstWorkType)} timeline-inline-icon">${iconImage(workIcon(firstWorkType), "task-color-icon timeline-inline-icon-image")}</span><span class="timeline-title-main">${escapeHtml(workLabelText)}</span><span class="task-icon task-culture timeline-inline-icon timeline-inline-icon-plant">${iconImage(plantIcon(plant || { name: plantLabelText }), "task-color-icon timeline-inline-icon-image")}</span><span class="timeline-title-main">${escapeHtml(plantLabelText)}</span></span>`;
+  return `<span class="timeline-title-flow"><span class="task-icon task-${escapeHtml(firstWorkType)} timeline-inline-icon">${iconImage(workIcon(firstWorkType), "task-color-icon timeline-inline-icon-image")}</span><span class="timeline-title-main">${escapeHtml(workLabelText)}</span></span>`;
+}
+
+function timelinePlantLineHtml(plantNames, plant) {
+  const plantLabelText = joinUniqueLabels(plantNames);
+  return `<span class="timeline-title-flow timeline-title-flow-plant"><span class="task-icon task-culture timeline-inline-icon timeline-inline-icon-plant">${iconImage(plantIcon(plant || { name: plantLabelText }), "task-color-icon timeline-inline-icon-image")}</span><span class="timeline-title-sub">${escapeHtml(plantLabelText)}</span></span>`;
 }
 
 function fitTimelineTitles() {
-  document.querySelectorAll(".timeline-card .reminder-info h3[data-fit-title]").forEach((title) => {
-    title.style.fontSize = "";
-    const date = title.querySelector(".timeline-title-date");
-    const flow = title.querySelector(".timeline-title-flow");
-    if (!date || !flow) return;
+  document.querySelectorAll(".timeline-card .timeline-work-line[data-fit-title]").forEach((line) => {
+    line.style.fontSize = "";
+    const flow = line.querySelector(".timeline-title-flow");
+    if (!flow) return;
 
-    let size = 19;
+    let size = 17;
     flow.style.fontSize = `${size}px`;
-    while (title.scrollWidth > title.clientWidth && size > 13) {
+    while (line.scrollWidth > line.clientWidth && size > 13) {
       size -= 0.5;
       flow.style.fontSize = `${size}px`;
     }

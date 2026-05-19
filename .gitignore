@@ -4,5 +4,6 @@ dist/
 *.log
 server.log
 server.err.log
+tmp-*.png
 .DS_Store
 Thumbs.db

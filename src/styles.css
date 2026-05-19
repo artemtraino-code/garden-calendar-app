@@ -1000,14 +1000,22 @@ h1 {
   color: var(--text);
   display: flex;
   align-items: center;
-  flex-wrap: nowrap;
-  gap: 6px;
   margin: 0;
-  min-height: 32px;
-  overflow: hidden;
-  font-size: 19px;
-  line-height: 1.1;
+  min-height: 30px;
+  font-size: 17px;
+  line-height: 1;
   white-space: nowrap;
+}
+
+.timeline-work-line {
+  color: var(--text);
+  display: block;
+  margin: 0;
+  min-height: 0;
+  overflow: visible;
+  font-size: 17px;
+  line-height: 1.1;
+  white-space: normal;
 }
 
 .timeline-title-date {
@@ -1026,8 +1034,19 @@ h1 {
 
 .timeline-title-main {
   color: var(--text);
-  font-size: 19px;
+  display: block;
+  font-size: 17px;
   font-weight: 850;
+  line-height: 1.12;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.timeline-title-sub {
+  color: var(--text);
+  font-size: 17px;
+  font-weight: 820;
   line-height: 1.12;
 }
 
@@ -1040,15 +1059,29 @@ h1 {
   flex: 1 1 auto;
 }
 
+.timeline-work-line .timeline-title-flow {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  align-items: start;
+  gap: 6px;
+  width: 100%;
+  white-space: normal;
+}
+
+.timeline-title-flow-plant {
+  white-space: normal;
+}
+
 .timeline-card .reminder-info {
   display: grid;
-  gap: 2px;
+  gap: 0;
 }
 
 .timeline-card {
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) 184px;
   grid-template-areas: "content actions";
   align-items: start;
+  column-gap: 20px;
 }
 
 .timeline-card > .reminder-info {
@@ -1060,6 +1093,41 @@ h1 {
   align-self: start;
   justify-content: flex-end;
   flex-wrap: nowrap;
+  min-width: 184px;
+}
+
+.timeline-card-grid {
+  display: grid;
+  grid-template-columns: minmax(250px, 0.44fr) minmax(320px, 0.56fr);
+  gap: 10px 18px;
+  align-items: start;
+}
+
+.timeline-card-main {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  align-content: start;
+}
+
+.timeline-card-side {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  min-width: 0;
+}
+
+.timeline-card-side-note-only {
+  padding-top: 42px;
+}
+
+.timeline-plant-line {
+  margin: 0;
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 780;
+  line-height: 1.18;
+  min-height: 20px;
 }
 
 .timeline-inline-icon {
@@ -1080,7 +1148,8 @@ h1 {
 }
 
 .timeline-preparations {
-  margin-top: 6px;
+  margin-top: 0;
+  min-width: 0;
 }
 
 .timeline-card .timeline-preparations .preparation-stack {
@@ -1088,9 +1157,10 @@ h1 {
   flex-wrap: wrap !important;
   align-items: flex-start;
   justify-content: flex-start;
-  gap: 3px 4px !important;
+  gap: 5px 6px !important;
   width: 100%;
   max-width: 100%;
+  overflow: visible;
 }
 
 .timeline-card .reminder-info p strong {
@@ -1100,10 +1170,14 @@ h1 {
 
 .timeline-note-lead {
   color: var(--text);
-  font-size: 14px;
-  font-weight: 760;
+  font-size: 13px;
+  font-weight: 730;
   line-height: 1.35;
   margin: 0;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 
 .timeline-meta {
@@ -2651,8 +2725,13 @@ button.postpone-calendar-day:hover {
     justify-self: end;
   }
 
+  .timeline-card-grid {
+    grid-template-columns: minmax(220px, 0.48fr) minmax(240px, 0.52fr);
+    gap: 10px 14px;
+  }
+
   .timeline-card .timeline-preparations .preparation-stack {
-    gap: 3px 4px !important;
+    gap: 4px 5px !important;
   }
 
   .objects-panel .panel-head {
@@ -2713,5 +2792,45 @@ button.postpone-calendar-day:hover {
 
   .task-row .remove-task-btn {
     width: 100%;
+  }
+}
+
+@media (max-width: 767px) {
+  .timeline-card {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "actions"
+      "content";
+    row-gap: 10px;
+  }
+
+  .timeline-card-actions {
+    justify-self: start;
+  }
+
+  .timeline-card-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .timeline-work-line {
+    font-size: 16px;
+    min-height: 22px;
+  }
+
+  .timeline-plant-line {
+    font-size: 15px;
+  }
+
+  .timeline-title-date {
+    font-size: 17px;
+  }
+
+  .timeline-card-side-note-only {
+    padding-top: 0;
+  }
+
+  .timeline-card .timeline-preparations .preparation-stack {
+    gap: 4px !important;
   }
 }

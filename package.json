@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "python -m http.server 5177",
+    "start": "python -m http.server 5199",
     "check": "node --check src/app.js && node --check src/calendar.js && node --check src/storage.js && node --check src/sample-data.js"
   },
   "devDependencies": {
