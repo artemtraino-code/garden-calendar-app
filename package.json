@@ -5,9 +5,20 @@
   "type": "module",
   "scripts": {
     "start": "python -m http.server 5199",
-    "check": "node --check src/app.js && node --check src/calendar.js && node --check src/storage.js && node --check src/sample-data.js && node --check sw.js"
+    "dev:react": "vite --config vite.react.config.js --host 0.0.0.0 --port 5299",
+    "build:react": "vite build --config vite.react.config.js",
+    "preview:react": "vite preview --config vite.react.config.js --host 0.0.0.0 --port 5299",
+    "check": "node --check src/app.js && node --check src/calendar.js && node --check src/storage.js && node --check src/sample-data.js && node --check src-react/adapters/legacyState.js && node --check sw.js"
   },
   "devDependencies": {
-    "playwright": "^1.60.0"
+    "@vitejs/plugin-react": "^6.0.2",
+    "playwright": "^1.60.0",
+    "typescript": "^6.0.3",
+    "vite": "^8.0.13"
+  },
+  "dependencies": {
+    "lucide-react": "^1.16.0",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6"
   }
 }
