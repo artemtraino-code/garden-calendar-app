@@ -633,6 +633,7 @@ export function Design1() {
   const missedCount = state.tasks.filter((t) => getEffectiveStatus(t) === "missed").length;
   const plannedCount = state.tasks.filter((t) => getEffectiveStatus(t) === "planned").length;
   const doneCount = state.tasks.filter((t) => getEffectiveStatus(t) === "done").length;
+  const isEmptyDateSelected = Boolean(emptyDate) && !state.tasks.some((task) => task.date === emptyDate);
 
   function scrollToDate(date: string) {
     setActiveDate(date);
@@ -860,44 +861,49 @@ export function Design1() {
       </header>
 
       <div className="max-w-5xl mx-auto w-full px-4 sm:px-6 py-4 flex flex-col gap-5 flex-1">
-        <div ref={feedRef} className="flex flex-col gap-5 pb-24">
-          {syncNotice && (
-            <div className="rounded-xl border border-stone-200 bg-white px-4 py-2 text-xs text-stone-500 shadow-sm">
-              {syncNotice}
-            </div>
-          )}
-          {emptyDate && !state.tasks.some((task) => task.date === emptyDate) && (
-            <div ref={emptyStateRef} className="rounded-2xl border border-dashed border-stone-200 bg-white px-5 py-5 text-center shadow-sm">
-              <p className="text-sm font-semibold text-stone-700">На {formatDateLong(emptyDate)} работы не назначены</p>
-              <p className="mt-1 text-xs text-stone-400">Можно создать задание через зелёную кнопку сверху.</p>
-            </div>
-          )}
-          {uniqueDates.map((date) => {
-            const dayTasks = state.tasks
-              .filter((t) => t.date === date)
-              .sort((a, b) => {
-                const order: Record<string, number> = { missed: 0, planned: 1, done: 2 };
-                return (order[getEffectiveStatus(a)] ?? 9) - (order[getEffectiveStatus(b)] ?? 9);
-              });
+        {syncNotice && (
+          <div className="rounded-xl border border-stone-200 bg-white px-4 py-2 text-xs text-stone-500 shadow-sm">
+            {syncNotice}
+          </div>
+        )}
 
-            if (dayTasks.length === 0) return null;
-            const isToday = date === todayStr;
+        {isEmptyDateSelected ? (
+          <div ref={emptyStateRef} className="flex min-h-[45vh] items-start justify-center pt-5 pb-24">
+            <div className="w-full max-w-md rounded-3xl border border-dashed border-stone-200 bg-white px-6 py-8 text-center shadow-sm">
+              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-stone-100 text-2xl">📅</div>
+              <p className="text-base font-bold text-stone-800">На {formatDateLong(emptyDate)} работы не назначены</p>
+              <p className="mt-2 text-sm text-stone-400">Можно создать задание через зелёную кнопку сверху.</p>
+            </div>
+          </div>
+        ) : (
+          <div ref={feedRef} className="flex flex-col gap-5 pb-24">
+            {uniqueDates.map((date) => {
+              const dayTasks = state.tasks
+                .filter((t) => t.date === date)
+                .sort((a, b) => {
+                  const order: Record<string, number> = { missed: 0, planned: 1, done: 2 };
+                  return (order[getEffectiveStatus(a)] ?? 9) - (order[getEffectiveStatus(b)] ?? 9);
+                });
 
-            return (
-              <div key={date} data-section={date}>
-                <div className="flex items-baseline gap-2 mb-2.5">
-                  <span className={`text-sm font-semibold whitespace-nowrap ${isToday ? "text-emerald-700" : "text-stone-700"}`}>{formatDateLong(date)}</span>
-                  <span className="text-xs text-stone-400">{getWeekdayFull(date)}</span>
-                  {isToday && <span className="text-[10px] font-bold bg-emerald-500 text-white rounded-full px-2 py-0.5 leading-none">Сегодня</span>}
-                  <div className="h-px flex-1 bg-stone-100 ml-1" />
-                  <span className="text-xs text-stone-300">{dayTasks.length}</span>
+              if (dayTasks.length === 0) return null;
+              const isToday = date === todayStr;
+
+              return (
+                <div key={date} data-section={date}>
+                  <div className="flex items-baseline gap-2 mb-2.5">
+                    <span className={`text-sm font-semibold whitespace-nowrap ${isToday ? "text-emerald-700" : "text-stone-700"}`}>{formatDateLong(date)}</span>
+                    <span className="text-xs text-stone-400">{getWeekdayFull(date)}</span>
+                    {isToday && <span className="text-[10px] font-bold bg-emerald-500 text-white rounded-full px-2 py-0.5 leading-none">Сегодня</span>}
+                    <div className="h-px flex-1 bg-stone-100 ml-1" />
+                    <span className="text-xs text-stone-300">{dayTasks.length}</span>
+                  </div>
+
+                  <DayCard tasks={dayTasks} state={state} onEdit={() => openDayEdit(dayTasks)} />
                 </div>
-
-                <DayCard tasks={dayTasks} state={state} onEdit={() => openDayEdit(dayTasks)} />
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       <div className="sm:hidden fixed bottom-5 right-4 z-30">
