@@ -171,7 +171,7 @@ export async function syncTaskToGoogle(task: Task, state: AppState, settings: Ca
 }
 
 export async function deleteGoogleEvent(task: Task, settings: CalendarSettings): Promise<void> {
-  if (!settings.enabled || !task.googleEventId) return;
+  if (!settings.enabled) return;
 
   const token = readToken();
   if (!token || token.expiresAt <= Date.now() + 30_000) {
@@ -179,7 +179,10 @@ export async function deleteGoogleEvent(task: Task, settings: CalendarSettings):
   }
 
   const calendarId = encodeURIComponent(settings.calendarId.trim() || "primary");
-  const response = await fetch(`${CALENDAR_API}/calendars/${calendarId}/events/${encodeURIComponent(task.googleEventId)}`, {
+  const eventId = task.googleEventId || await findGoogleEventIdForTask(task, settings, token);
+  if (!eventId) return;
+
+  const response = await fetch(`${CALENDAR_API}/calendars/${calendarId}/events/${encodeURIComponent(eventId)}`, {
     method: "DELETE",
     headers: { Authorization: `Bearer ${token.accessToken}` },
   });
@@ -187,6 +190,30 @@ export async function deleteGoogleEvent(task: Task, settings: CalendarSettings):
   if (!response.ok && response.status !== 404 && response.status !== 410) {
     throw new Error(await readGoogleError(response));
   }
+}
+
+async function findGoogleEventIdForTask(task: Task, settings: CalendarSettings, token: StoredToken): Promise<string | null> {
+  const calendarId = encodeURIComponent(settings.calendarId.trim() || "primary");
+  const dateStart = `${task.date}T00:00:00+02:00`;
+  const dateEnd = `${task.date}T23:59:59+02:00`;
+  const params = new URLSearchParams({
+    privateExtendedProperty: `gardenTaskId=${task.id}`,
+    timeMin: dateStart,
+    timeMax: dateEnd,
+    singleEvents: "true",
+    maxResults: "10",
+  });
+
+  const response = await fetch(`${CALENDAR_API}/calendars/${calendarId}/events?${params.toString()}`, {
+    headers: { Authorization: `Bearer ${token.accessToken}` },
+  });
+
+  if (!response.ok) {
+    throw new Error(await readGoogleError(response));
+  }
+
+  const data = await response.json();
+  return data?.items?.[0]?.id || null;
 }
 
 export async function listGoogleCalendars(): Promise<GoogleCalendarListItem[]> {

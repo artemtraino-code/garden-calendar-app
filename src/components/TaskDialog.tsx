@@ -76,7 +76,11 @@ export function TaskDialog({ open, task, forceNew, state, defaultDate, onClose, 
   }
 
   function handleDelete() {
-    if (task) { onDelete(task.id); onClose(); }
+    if (!task) return;
+    const confirmed = window.confirm("Удалить это задание? Оно также будет удалено из Google Calendar, если календарь подключен.");
+    if (!confirmed) return;
+    onDelete(task.id);
+    onClose();
   }
 
   function handleRepeat() {
