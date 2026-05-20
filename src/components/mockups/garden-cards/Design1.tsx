@@ -650,6 +650,7 @@ export function Design1() {
   const [syncNotice, setSyncNotice] = useState("");
   const todayStr = today();
   const [activeDate, setActiveDate] = useState(todayStr);
+  const [emptyDate, setEmptyDate] = useState("");
   const [taskDialog, setTaskDialog] = useState<{ open: boolean; task: Task | null; originDate?: string; forceNew?: boolean }>({ open: false, task: null });
   const [settingsOpen, setSettingsOpen] = useState(false);
   const feedRef = useRef<HTMLDivElement>(null);
@@ -669,14 +670,17 @@ export function Design1() {
   });
 
   const allDates = Array.from(new Set(state.tasks.map((t) => t.date))).sort();
-  const uniqueDates = [...new Set([...tiles.map((t) => t.date), ...allDates])].sort();
+  const uniqueDates = [...new Set([...tiles.map((t) => t.date), ...allDates, emptyDate].filter(Boolean))].sort();
   const missedCount = state.tasks.filter((t) => getEffectiveStatus(t) === "missed").length;
   const plannedCount = state.tasks.filter((t) => getEffectiveStatus(t) === "planned").length;
   const doneCount = state.tasks.filter((t) => getEffectiveStatus(t) === "done").length;
 
   function scrollToDate(date: string) {
     setActiveDate(date);
-    window.requestAnimationFrame(() => {
+    const hasTasks = state.tasks.some((task) => task.date === date);
+    setEmptyDate(hasTasks ? "" : date);
+
+    window.requestAnimationFrame(() => window.requestAnimationFrame(() => {
       const el = feedRef.current?.querySelector(`[data-section="${date}"]`) as HTMLElement | null;
       const header = document.querySelector("header") as HTMLElement | null;
       if (!el) return;
@@ -684,7 +688,7 @@ export function Design1() {
       const headerBottom = header?.getBoundingClientRect().bottom ?? 0;
       const top = window.scrollY + el.getBoundingClientRect().top - headerBottom - 14;
       window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
-    });
+    }));
   }
 
   function openNew() {
@@ -892,7 +896,7 @@ export function Design1() {
                 return (order[getEffectiveStatus(a)] ?? 9) - (order[getEffectiveStatus(b)] ?? 9);
               });
 
-            if (dayTasks.length === 0) return null;
+            if (dayTasks.length === 0 && date !== emptyDate) return null;
             const isToday = date === todayStr;
 
             return (
@@ -905,7 +909,14 @@ export function Design1() {
                   <span className="text-xs text-stone-300">{dayTasks.length}</span>
                 </div>
 
-                <DayCard tasks={dayTasks} state={state} onEdit={() => openDayEdit(dayTasks)} />
+                {dayTasks.length > 0 ? (
+                  <DayCard tasks={dayTasks} state={state} onEdit={() => openDayEdit(dayTasks)} />
+                ) : (
+                  <div className="rounded-2xl border border-dashed border-stone-200 bg-white px-5 py-5 text-center shadow-sm">
+                    <p className="text-sm font-semibold text-stone-700">На {formatDateLong(date)} работы не назначены</p>
+                    <p className="mt-1 text-xs text-stone-400">Можно создать задание через зелёную кнопку сверху.</p>
+                  </div>
+                )}
               </div>
             );
           })}

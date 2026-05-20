@@ -121,43 +121,51 @@ export function TaskDialog({ open, task, forceNew, state, defaultDate, onClose, 
             </div>
           </div>
 
-          {/* Group */}
-          <MultiPicker
-            label="Группы"
-            options={state.groups}
-            selected={form.groupIds}
-            onChange={(ids) => set("groupIds", ids)}
-            placeholder="Выберите группы..."
-          />
+          <div className="grid grid-cols-2 gap-3">
+            <div className="min-w-0">
+              <MultiPicker
+                label="Группы"
+                options={state.groups}
+                selected={form.groupIds}
+                onChange={(ids) => set("groupIds", ids)}
+                placeholder="Выберите группы..."
+              />
+            </div>
 
-          {/* Culture */}
-          <MultiPicker
-            label="Культуры"
-            options={state.cultures.filter((c) =>
-              form.groupIds.length === 0 || c.groupIds.some((g) => form.groupIds.includes(g))
-            )}
-            selected={form.cultureIds}
-            onChange={(ids) => set("cultureIds", ids)}
-            placeholder="Выберите культуры..."
-          />
+            <div className="min-w-0">
+              <MultiPicker
+                label="Культуры"
+                options={state.cultures.filter((c) =>
+                  form.groupIds.length === 0 || c.groupIds.some((g) => form.groupIds.includes(g))
+                )}
+                selected={form.cultureIds}
+                onChange={(ids) => set("cultureIds", ids)}
+                placeholder="Выберите культуры..."
+              />
+            </div>
+          </div>
 
-          {/* Work */}
-          <MultiPicker
-            label="Работы"
-            options={state.workTypes}
-            selected={form.workTypeIds}
-            onChange={(ids) => set("workTypeIds", ids)}
-            placeholder="Выберите работы..."
-          />
+          <div className="grid grid-cols-2 gap-3">
+            <div className="min-w-0">
+              <MultiPicker
+                label="Работы"
+                options={state.workTypes}
+                selected={form.workTypeIds}
+                onChange={(ids) => set("workTypeIds", ids)}
+                placeholder="Выберите работы..."
+              />
+            </div>
 
-          {/* Preparations */}
-          <MultiPicker
-            label="Препараты"
-            options={state.preparations}
-            selected={form.preparationIds}
-            onChange={(ids) => set("preparationIds", ids)}
-            placeholder="Выберите препараты..."
-          />
+            <div className="min-w-0">
+              <MultiPicker
+                label="Препараты"
+                options={state.preparations}
+                selected={form.preparationIds}
+                onChange={(ids) => set("preparationIds", ids)}
+                placeholder="Выберите препараты..."
+              />
+            </div>
+          </div>
 
           {/* Date */}
           <div className="flex flex-col gap-1.5">
