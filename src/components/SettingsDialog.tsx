@@ -24,10 +24,10 @@ interface SettingsDialogProps {
 type Tab = "groups" | "works" | "preps" | "calendar";
 
 const TABS: { id: Tab; label: string }[] = [
-  { id: "groups", label: "Группы и культуры" },
+  { id: "groups", label: "Группы" },
   { id: "works",  label: "Работы"            },
   { id: "preps",  label: "Препараты"         },
-  { id: "calendar", label: "Настройки Google календаря" },
+  { id: "calendar", label: "Google" },
 ];
 
 const ICONS = ["🌸","🌹","🌿","🌱","🌻","🍅","🫑","🍓","🍎","🌳","🌲","🌾","🥦","🧅","🧄","💧","🐛","🪢","✂️","🪵","🌼","🌺","🍇","🍋","🫐","🥕","🌽","🥒","🧆"];
@@ -192,13 +192,13 @@ export function SettingsDialog({
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 px-4 sm:px-6 pt-3 overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="flex gap-1.5 px-4 sm:px-6 pt-3 pb-2 overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {TABS.map((t) => (
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
               className={cn(
-                "shrink-0 whitespace-nowrap px-4 py-2 rounded-xl text-sm font-medium transition-colors",
+                "shrink-0 inline-flex h-9 min-h-9 items-center justify-center whitespace-nowrap px-3 rounded-xl text-xs sm:text-sm font-medium transition-colors",
                 tab === t.id ? "bg-stone-800 text-white" : "text-stone-500 hover:bg-stone-100"
               )}
             >
