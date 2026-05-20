@@ -1,9 +1,4 @@
 node_modules/
 dist/
-.cache/
-*.log
-server.log
-server.err.log
-tmp-*.png
 .DS_Store
-Thumbs.db
+*.log
