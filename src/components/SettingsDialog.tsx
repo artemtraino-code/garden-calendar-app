@@ -75,7 +75,6 @@ function InlineEdit({ text, onSave }: InlineEditProps) {
   return (
     <div className="flex items-center gap-1.5">
       <input
-        autoFocus
         value={val}
         onChange={(e) => setVal(e.target.value)}
         onKeyDown={(e) => { if (e.key === "Enter") { onSave(val); setEditing(false); } if (e.key === "Escape") setEditing(false); }}
