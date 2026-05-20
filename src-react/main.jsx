@@ -43,8 +43,8 @@ function App() {
         <div className="brand">
           <span className="brand-mark">🌱</span>
           <div>
-            <strong><span className="brand-full">Огородный календарь</span><span className="brand-short">Огородный</span></strong>
-            <span>React-прототип нового дашборда</span>
+            <strong><span className="brand-full">Огородный</span><span className="brand-short">Огородный</span></strong>
+            <span>{new Date(`${dashboard.today}T00:00:00`).toLocaleDateString("ru-RU", { weekday: "short", day: "numeric", month: "long", year: "numeric" })}</span>
           </div>
         </div>
         <div className="topbar-actions">

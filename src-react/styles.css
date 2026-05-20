@@ -83,7 +83,7 @@ button {
   display: inline;
 }
 
-.brand-short {
+.brand strong .brand-short {
   display: none;
 }
 
@@ -452,7 +452,7 @@ button {
     z-index: 40;
     min-height: auto;
     align-items: center;
-    padding: 24px 34px 24px 36px;
+    padding: 18px 28px 18px 30px;
     background: rgba(255, 255, 255, 0.96);
     border-bottom: 1px solid #ecefed;
     box-shadow: 0 2px 10px rgba(31, 44, 34, 0.08);
@@ -465,7 +465,7 @@ button {
   .brand strong {
     max-width: 220px;
     white-space: nowrap;
-    font-size: 26px;
+    font-size: 23px;
   }
 
   .brand div > span,
@@ -478,8 +478,8 @@ button {
   }
 
   .ghost-button {
-    width: 58px;
-    min-height: 58px;
+    width: 50px;
+    min-height: 50px;
     padding: 0;
     border-radius: 50%;
     border-color: transparent;
@@ -487,8 +487,8 @@ button {
   }
 
   .topbar-actions .primary-button {
-    width: 78px;
-    min-height: 60px;
+    width: 64px;
+    min-height: 50px;
     padding: 0;
     border-radius: 20px;
     box-shadow: 0 10px 18px rgba(0, 137, 88, 0.2);
@@ -499,22 +499,22 @@ button {
   }
 
   .date-strip {
-    grid-auto-columns: 118px;
-    gap: 14px;
-    padding: 30px 36px 28px;
+    grid-auto-columns: 96px;
+    gap: 12px;
+    padding: 24px 30px 24px;
     background: #fff;
     box-shadow: inset 0 -1px #eef0ed;
   }
 
   .date-tile {
-    min-height: 140px;
-    border-radius: 22px;
-    gap: 8px;
+    min-height: 108px;
+    border-radius: 18px;
+    gap: 6px;
     background: #fff;
   }
 
   .date-tile strong {
-    font-size: 32px;
+    font-size: 26px;
     line-height: 0.95;
   }
 
@@ -523,34 +523,34 @@ button {
   }
 
   .date-tile span {
-    font-size: 20px;
+    font-size: 15px;
     font-weight: 800;
     text-transform: uppercase;
   }
 
   .date-tile small {
-    font-size: 14px;
+    font-size: 12px;
   }
 
   .timeline {
-    gap: 34px;
-    padding: 0 34px;
+    gap: 28px;
+    padding: 0 30px;
   }
 
   .date-section {
-    scroll-margin-top: 150px;
+    scroll-margin-top: 122px;
   }
 
   .date-heading {
-    margin-bottom: 22px;
+    margin-bottom: 16px;
   }
 
   .date-heading strong {
-    font-size: 22px;
+    font-size: 19px;
   }
 
   .date-heading span {
-    font-size: 19px;
+    font-size: 16px;
     color: #9b9c9d;
   }
 
@@ -565,8 +565,8 @@ button {
     grid-template-columns: 1fr;
     gap: 10px;
     min-height: 0;
-    padding: 22px 32px 26px;
-    border-radius: 24px;
+    padding: 17px 24px 20px;
+    border-radius: 20px;
     background: #fff;
     border-color: #ecefed;
     box-shadow: 0 4px 16px rgba(31, 44, 34, 0.13);
@@ -574,13 +574,13 @@ button {
 
   .status-pill {
     position: absolute;
-    top: 24px;
-    right: 30px;
+    top: 20px;
+    right: 22px;
     justify-self: auto;
-    min-width: 190px;
-    min-height: 50px;
-    font-size: 18px;
-    border-radius: 26px;
+    min-width: 150px;
+    min-height: 40px;
+    font-size: 14px;
+    border-radius: 20px;
   }
 
   .task-main {
@@ -596,9 +596,9 @@ button {
   }
 
   .title-stack {
-    max-width: calc(100% - 210px);
-    font-size: 25px;
-    gap: 18px;
+    max-width: calc(100% - 164px);
+    font-size: 21px;
+    gap: 12px;
   }
 
   .title-stack span {
@@ -606,8 +606,8 @@ button {
   }
 
   .title-stack span + span {
-    margin-top: 18px;
-    font-size: 23px;
+    margin-top: 12px;
+    font-size: 18px;
     color: #6c6d6f;
     font-weight: 500;
   }
@@ -618,9 +618,9 @@ button {
   }
 
   .task-note {
-    margin-top: 16px;
+    margin-top: 13px;
     color: #a0a1a3;
-    font-size: 20px;
+    font-size: 16px;
     font-weight: 400;
     line-height: 1.45;
   }
@@ -632,17 +632,17 @@ button {
   .prep-row {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 6px;
   }
 
   .prep-chip {
     width: auto;
-    max-width: 180px;
-    min-height: 42px;
+    max-width: 154px;
+    min-height: 34px;
     justify-content: flex-start;
-    border-radius: 12px;
-    padding: 4px 12px 4px 4px;
-    font-size: 16px;
+    border-radius: 10px;
+    padding: 3px 9px 3px 3px;
+    font-size: 13px;
     background: #fff9ec;
     border-color: #f0c774;
     color: #a14b00;
@@ -650,10 +650,10 @@ button {
 
   .prep-chip img,
   .prep-chip b {
-    width: 40px;
-    height: 40px;
-    flex-basis: 40px;
-    border-radius: 10px;
+    width: 30px;
+    height: 30px;
+    flex-basis: 30px;
+    border-radius: 8px;
   }
 
   .prep-chip em {
@@ -663,19 +663,19 @@ button {
 
   .mobile-fab {
     position: fixed;
-    right: 34px;
-    bottom: 30px;
+    right: 30px;
+    bottom: 26px;
     z-index: 50;
-    min-height: 86px;
+    min-height: 68px;
     border: 0;
-    border-radius: 26px;
+    border-radius: 22px;
     display: inline-flex;
     align-items: center;
-    gap: 18px;
-    padding: 0 36px;
+    gap: 13px;
+    padding: 0 28px;
     background: #009b68;
     color: #fff;
-    font-size: 22px;
+    font-size: 18px;
     font-weight: 900;
     box-shadow: 0 16px 32px rgba(0, 137, 88, 0.28);
   }
