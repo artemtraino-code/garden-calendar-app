@@ -9,6 +9,7 @@ const SCOPE = [
 ].join(" ");
 const TOKEN_KEY = "garden-calendar-google-token-v1";
 const SETTINGS_KEY = "garden-calendar-google-settings-v1";
+const DEFAULT_GOOGLE_CLIENT_ID = "149244479390-u8bk08lluj1tb58593kpdmgfmbj7bl94.apps.googleusercontent.com";
 
 declare global {
   interface Window {
@@ -61,9 +62,9 @@ export interface SyncResult {
 }
 
 export const DEFAULT_CALENDAR_SETTINGS: CalendarSettings = {
-  clientId: "",
+  clientId: DEFAULT_GOOGLE_CLIENT_ID,
   calendarId: "primary",
-  enabled: false,
+  enabled: true,
   eventTime: "09:00",
   reminderMinutes: 60,
 };
@@ -72,7 +73,11 @@ export function loadCalendarSettings(): CalendarSettings {
   try {
     const raw = localStorage.getItem(SETTINGS_KEY);
     if (!raw) return DEFAULT_CALENDAR_SETTINGS;
-    return { ...DEFAULT_CALENDAR_SETTINGS, ...JSON.parse(raw) };
+    const stored = { ...DEFAULT_CALENDAR_SETTINGS, ...JSON.parse(raw) };
+    return {
+      ...stored,
+      clientId: stored.clientId || DEFAULT_GOOGLE_CLIENT_ID,
+    };
   } catch {
     return DEFAULT_CALENDAR_SETTINGS;
   }
