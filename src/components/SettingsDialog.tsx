@@ -192,13 +192,13 @@ export function SettingsDialog({
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 px-6 pt-3">
+        <div className="flex gap-1 px-4 sm:px-6 pt-3 overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {TABS.map((t) => (
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
               className={cn(
-                "px-4 py-2 rounded-xl text-sm font-medium transition-colors",
+                "shrink-0 whitespace-nowrap px-4 py-2 rounded-xl text-sm font-medium transition-colors",
                 tab === t.id ? "bg-stone-800 text-white" : "text-stone-500 hover:bg-stone-100"
               )}
             >
