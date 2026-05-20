@@ -86,7 +86,7 @@ export function TaskDialog({ open, task, forceNew, state, defaultDate, onClose, 
   return (
     <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center pt-4 sm:pt-0">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white w-full sm:max-w-lg rounded-2xl shadow-2xl max-h-[calc(100vh-1rem)] sm:max-h-[92vh] flex flex-col">
+      <div className="relative bg-white w-full sm:max-w-lg rounded-2xl shadow-2xl max-h-[calc(100dvh-1rem)] sm:max-h-[92dvh] flex flex-col overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-stone-100">
           <h2 className="text-base font-bold text-stone-800">
@@ -98,7 +98,7 @@ export function TaskDialog({ open, task, forceNew, state, defaultDate, onClose, 
         </div>
 
         {/* Body */}
-        <div className="overflow-y-auto flex-1 px-5 py-4 flex flex-col gap-5">
+        <div className="overflow-y-auto flex-1 px-5 py-4 flex flex-col gap-5 overscroll-contain">
           {/* Status */}
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium text-stone-700">Статус</label>
@@ -238,13 +238,14 @@ export function TaskDialog({ open, task, forceNew, state, defaultDate, onClose, 
         </div>
 
         {/* Footer */}
-        <div className="px-5 pb-5 pt-3 border-t border-stone-100 flex items-center gap-2">
-          {!isNew && (
-            <>
+        <div className="sticky bottom-0 z-10 border-t border-stone-100 bg-white px-5 pt-3 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center">
+            {!isNew && (
+              <>
               <button
                 type="button"
                 onClick={handleDelete}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium text-red-600 hover:bg-red-50 border border-red-200 transition-colors"
+                className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium text-red-600 hover:bg-red-50 border border-red-200 transition-colors"
               >
                 <Trash2 size={13} /> Удалить
               </button>
@@ -252,28 +253,32 @@ export function TaskDialog({ open, task, forceNew, state, defaultDate, onClose, 
                 <button
                   type="button"
                   onClick={handleRepeat}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium text-blue-600 hover:bg-blue-50 border border-blue-200 transition-colors"
+                  className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium text-blue-600 hover:bg-blue-50 border border-blue-200 transition-colors"
                 >
                   <RefreshCw size={13} /> Повторить
                 </button>
               )}
-            </>
-          )}
-          <button
-            type="button"
-            onClick={onClose}
-            className="ml-auto px-4 py-2 rounded-xl text-sm font-medium text-stone-600 hover:bg-stone-100 border border-stone-200 transition-colors"
-          >
-            Отмена
-          </button>
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={form.workTypeIds.length === 0}
-            className="px-4 py-2 rounded-xl text-sm font-semibold bg-emerald-600 hover:bg-emerald-700 text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
-          >
-            {isNew ? "Создать" : "Сохранить"}
-          </button>
+              </>
+            )}
+            <button
+              type="button"
+              onClick={onClose}
+              className={cn(
+                "px-4 py-2 rounded-xl text-sm font-medium text-stone-600 hover:bg-stone-100 border border-stone-200 transition-colors",
+                !isNew ? "sm:ml-auto" : "col-start-1 sm:ml-auto"
+              )}
+            >
+              Отмена
+            </button>
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={form.workTypeIds.length === 0}
+              className="px-4 py-2 rounded-xl text-sm font-semibold bg-emerald-600 hover:bg-emerald-700 text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
+            >
+              {isNew ? "Создать" : "Сохранить"}
+            </button>
+          </div>
         </div>
       </div>
     </div>
