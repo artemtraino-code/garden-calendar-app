@@ -822,7 +822,7 @@ export function Design1() {
       <header className="bg-white border-b border-stone-200 sticky top-0 z-20 shadow-sm">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center gap-3 sm:gap-5">
           <div className="flex-shrink-0">
-            <span className="text-base font-bold text-stone-800">🌱 Огородный</span>
+            <span className="text-base font-bold text-stone-800">🌱 Огород</span>
           </div>
 
           <div className="hidden sm:flex items-center gap-1.5 text-sm text-stone-400 flex-shrink-0">
