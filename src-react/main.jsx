@@ -1,6 +1,6 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { CalendarDays, Plus, Settings } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Settings } from "lucide-react";
 import { loadState } from "../src/storage.js";
 import { addDays } from "../src/calendar.js";
 import {
@@ -16,6 +16,7 @@ function App() {
   const [legacyState] = useState(() => loadState());
   const dashboard = useMemo(() => toDashboardState(legacyState), [legacyState]);
   const [activeDate, setActiveDate] = useState(dashboard.today);
+  const dateStripRef = useRef(null);
 
   const dates = useMemo(() => {
     const start = addDays(dashboard.today, -3);
@@ -32,7 +33,23 @@ function App() {
     });
   }
 
-  const grouped = dates.map((date) => ({
+  function slideDateStrip(direction) {
+    const strip = dateStripRef.current;
+    const tile = strip?.querySelector(".date-tile");
+    if (!strip || !tile) return;
+
+    const tileRect = tile.getBoundingClientRect();
+    strip.scrollBy({
+      left: direction * (tileRect.width + 7),
+      behavior: "smooth",
+    });
+  }
+
+  const workDates = useMemo(
+    () => [...new Set(dashboard.tasks.map((task) => task.date))].sort(),
+    [dashboard.tasks],
+  );
+  const grouped = workDates.map((date) => ({
     date,
     tasks: dashboard.tasks.filter((task) => task.date === date),
   }));
@@ -53,31 +70,39 @@ function App() {
         </div>
       </header>
 
-      <section className="date-strip" aria-label="Лента дат">
-        {dates.map((date) => {
-          const stats = getDateStats(dashboard.tasks, date);
-          const tone = stats.missed ? "missed" : stats.planned ? "planned" : stats.done ? "done" : "empty";
-          return (
-            <button
-              key={date}
-              type="button"
-              className={`date-tile ${tone} ${activeDate === date ? "active" : ""}`}
-              onClick={() => scrollToDate(date)}
-            >
-              <strong>
-                <span className="date-tile-day">{new Date(`${date}T00:00:00`).getDate()}</span>
-                <span className="date-tile-month"> мая</span>
-              </strong>
-              <span>{shortWeekday(date)}</span>
-              <small>
-                {stats.done ? `✓ ${stats.done} ` : ""}
-                {stats.planned ? `• ${stats.planned} ` : ""}
-                {stats.missed ? `↺ ${stats.missed}` : ""}
-              </small>
-            </button>
-          );
-        })}
-      </section>
+      <div className="date-carousel" aria-label="Календарь">
+        <button className="date-arrow" type="button" aria-label="Предыдущие даты" onClick={() => slideDateStrip(-1)}>
+          <ChevronLeft size={14} />
+        </button>
+        <section ref={dateStripRef} className="date-strip" aria-label="Лента дат">
+          {dates.map((date) => {
+            const stats = getDateStats(dashboard.tasks, date);
+            const tone = stats.missed ? "missed" : stats.planned ? "planned" : stats.done ? "done" : "empty";
+            return (
+              <button
+                key={date}
+                type="button"
+                className={`date-tile ${tone} ${activeDate === date ? "active" : ""}`}
+                onClick={() => scrollToDate(date)}
+              >
+                <strong>
+                  <span className="date-tile-day">{new Date(`${date}T00:00:00`).getDate()}</span>
+                  <span className="date-tile-month"> мая</span>
+                </strong>
+                <span>{shortWeekday(date)}</span>
+                <small>
+                  {stats.done ? `✓ ${stats.done} ` : ""}
+                  {stats.planned ? `• ${stats.planned} ` : ""}
+                  {stats.missed ? `↺ ${stats.missed}` : ""}
+                </small>
+              </button>
+            );
+          })}
+        </section>
+        <button className="date-arrow" type="button" aria-label="Следующие даты" onClick={() => slideDateStrip(1)}>
+          <ChevronRight size={14} />
+        </button>
+      </div>
 
       <section className="timeline">
         {grouped.map(({ date, tasks }) => (
@@ -86,13 +111,9 @@ function App() {
               <strong>{displayDate(date)}</strong>
               <span>{displayWeekday(date)}</span>
             </div>
-            {tasks.length ? (
-              <div className="task-list">
-                {tasks.map((task) => <TaskCard key={task.id} task={task} dashboard={dashboard} />)}
-              </div>
-            ) : (
-              <div className="empty-day">На эту дату работы не назначены.</div>
-            )}
+            <div className="task-list">
+              {tasks.map((task) => <TaskCard key={task.id} task={task} dashboard={dashboard} />)}
+            </div>
           </section>
         ))}
       </section>
