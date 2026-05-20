@@ -24,7 +24,8 @@ interface DateTile {
   label: string;
 }
 
-const DATE_WINDOW = 14;
+const DATE_PAST_DAYS = 365;
+const DATE_FUTURE_DAYS = 730;
 const APP_STATE_KEY = "garden-calendar-react-state-v3";
 
 const SEED: AppState = {
@@ -367,7 +368,7 @@ function DateStrip({
   const todayStr = today();
 
   function scrollStrip(direction: -1 | 1) {
-    stripRef.current?.scrollBy({ left: direction * 220, behavior: "smooth" });
+    stripRef.current?.scrollBy({ left: direction * 88, behavior: "smooth" });
   }
 
   useEffect(() => {
@@ -622,14 +623,14 @@ export function Design1() {
     saveCalendarSettings(calendarSettings);
   }, [calendarSettings]);
 
-  const startDate = addDays(todayStr, -3);
-  const tiles = Array.from({ length: DATE_WINDOW }, (_, i) => {
+  const startDate = addDays(todayStr, -DATE_PAST_DAYS);
+  const tiles = Array.from({ length: DATE_PAST_DAYS + DATE_FUTURE_DAYS + 1 }, (_, i) => {
     const d = addDays(startDate, i);
     return { date: d, label: new Date(d + "T00:00:00").getDate().toString() };
   });
 
   const allDates = Array.from(new Set(state.tasks.map((t) => t.date))).sort();
-  const uniqueDates = [...new Set([...tiles.map((t) => t.date), ...allDates].filter(Boolean))].sort();
+  const uniqueDates = allDates;
   const missedCount = state.tasks.filter((t) => getEffectiveStatus(t) === "missed").length;
   const plannedCount = state.tasks.filter((t) => getEffectiveStatus(t) === "planned").length;
   const doneCount = state.tasks.filter((t) => getEffectiveStatus(t) === "done").length;
@@ -662,6 +663,14 @@ export function Design1() {
       const headerBottom = header?.getBoundingClientRect().bottom ?? 0;
       const top = window.scrollY + el.getBoundingClientRect().top - headerBottom - 14;
       window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+    }));
+  }
+
+  function jumpToToday() {
+    scrollToDate(todayStr);
+    window.requestAnimationFrame(() => window.requestAnimationFrame(() => {
+      const todayTile = document.querySelector(`[data-date="${todayStr}"]`) as HTMLElement | null;
+      todayTile?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
     }));
   }
 
@@ -801,8 +810,8 @@ export function Design1() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center gap-3 sm:gap-5">
           <button
             type="button"
-            onClick={() => scrollToDate(todayStr)}
-            className="flex-shrink-0 text-base font-bold text-stone-800 rounded-lg transition-colors hover:bg-stone-100 px-2 py-1 -ml-2"
+            onClick={jumpToToday}
+            className="flex-shrink-0 text-lg sm:text-xl font-bold text-stone-800 rounded-lg transition-colors hover:bg-stone-100 px-2 py-1 -ml-2"
             title="Перейти к текущей дате"
           >
             🌱 Огород
