@@ -19,9 +19,8 @@ function App() {
 
   const dates = useMemo(() => {
     const start = addDays(dashboard.today, -3);
-    const week = Array.from({ length: 12 }, (_, index) => addDays(start, index));
-    return [...new Set([...week, ...dashboard.tasks.map((task) => task.date)])].sort();
-  }, [dashboard.today, dashboard.tasks]);
+    return Array.from({ length: 13 }, (_, index) => addDays(start, index));
+  }, [dashboard.today]);
 
   function scrollToDate(date) {
     setActiveDate(date);
@@ -65,8 +64,11 @@ function App() {
               className={`date-tile ${tone} ${activeDate === date ? "active" : ""}`}
               onClick={() => scrollToDate(date)}
             >
-              <strong>{new Date(`${date}T00:00:00`).getDate()} мая</strong>
-              <span>{displayWeekday(date)}</span>
+              <strong>
+                <span className="date-tile-day">{new Date(`${date}T00:00:00`).getDate()}</span>
+                <span className="date-tile-month"> мая</span>
+              </strong>
+              <span>{shortWeekday(date)}</span>
               <small>
                 {stats.done ? `✓ ${stats.done} ` : ""}
                 {stats.planned ? `• ${stats.planned} ` : ""}
@@ -164,6 +166,10 @@ function iconToEmoji(icon) {
     "ear-of-corn": "🌽",
   };
   return icons[icon] || icon || "";
+}
+
+function shortWeekday(date) {
+  return displayWeekday(date).slice(0, 2).toUpperCase();
 }
 
 createRoot(document.getElementById("react-root")).render(<App />);

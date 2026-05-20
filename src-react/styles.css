@@ -158,6 +158,10 @@ button {
   color: #26372c;
 }
 
+.date-tile strong span {
+  display: inline;
+}
+
 .date-tile span {
   font-size: 12px;
   text-transform: lowercase;
@@ -510,18 +514,22 @@ button {
   }
 
   .date-tile strong {
-    font-size: 27px;
+    font-size: 32px;
     line-height: 0.95;
   }
 
+  .date-tile-month {
+    display: none !important;
+  }
+
   .date-tile span {
-    font-size: 15px;
+    font-size: 20px;
     font-weight: 800;
     text-transform: uppercase;
   }
 
   .date-tile small {
-    font-size: 13px;
+    font-size: 14px;
   }
 
   .timeline {
