@@ -192,7 +192,7 @@ export function SettingsDialog({
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1.5 px-4 sm:px-6 pt-3 pb-2 overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="flex h-14 min-h-14 items-center gap-1.5 px-4 sm:px-6 overflow-x-auto overflow-y-visible overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {TABS.map((t) => (
             <button
               key={t.id}
