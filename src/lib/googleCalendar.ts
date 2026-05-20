@@ -73,10 +73,13 @@ export function loadCalendarSettings(): CalendarSettings {
   try {
     const raw = localStorage.getItem(SETTINGS_KEY);
     if (!raw) return DEFAULT_CALENDAR_SETTINGS;
-    const stored = { ...DEFAULT_CALENDAR_SETTINGS, ...JSON.parse(raw) };
+    const parsed = JSON.parse(raw);
+    const stored = { ...DEFAULT_CALENDAR_SETTINGS, ...parsed };
+    const hadClientId = Boolean(parsed.clientId);
     return {
       ...stored,
       clientId: stored.clientId || DEFAULT_GOOGLE_CLIENT_ID,
+      enabled: hadClientId ? stored.enabled : true,
     };
   } catch {
     return DEFAULT_CALENDAR_SETTINGS;
