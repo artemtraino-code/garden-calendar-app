@@ -1,5 +1,7 @@
 import type { Preparation } from "./types";
 
+const prepImage = (fileName: string) => `${import.meta.env.BASE_URL}preparations/${fileName}`;
+
 export const initialPreparations: Preparation[] = [
   {
     "id": "prep_store_osmocote_bloom",
@@ -7,7 +9,7 @@ export const initialPreparations: Preparation[] = [
     "purposeShort": "для петуній",
     "dosage": "Уточнить по инструкции препарата перед применением",
     "waitingPeriod": "",
-    "image": "/preparations/prep_store_osmocote_bloom.webp",
+    "image": prepImage("prep_store_osmocote_bloom.webp"),
     "shortName": "Osmocote Bloom до 3 місяців"
   },
   {
@@ -16,7 +18,7 @@ export const initialPreparations: Preparation[] = [
     "purposeShort": "кальцій від гнилі",
     "dosage": "1 столова ложка (приблизно 25 г) на 10 л води",
     "waitingPeriod": "",
-    "image": "/preparations/prep_store_kaltsinit_kaltsievaya_selitra.webp",
+    "image": prepImage("prep_store_kaltsinit_kaltsievaya_selitra.webp"),
     "shortName": "Кальцієва Селітра ВИРОБНИК YARA"
   },
   {
@@ -25,7 +27,7 @@ export const initialPreparations: Preparation[] = [
     "purposeShort": "для росту і цвітіння",
     "dosage": "1 ст. ложка на 10 л води (під корінь)",
     "waitingPeriod": "",
-    "image": "/preparations/prep_master_202020.webp",
+    "image": prepImage("prep_master_202020.webp"),
     "shortName": "Мастер NPK 20-20-20 Valagro"
   },
   {
@@ -34,7 +36,7 @@ export const initialPreparations: Preparation[] = [
     "purposeShort": "для цвітіння і кореня",
     "dosage": "1 столова ложка (приблизно 25 г) на 10 л води",
     "waitingPeriod": "",
-    "image": "/preparations/prep_store_monofosfat_kaliya.webp",
+    "image": prepImage("prep_store_monofosfat_kaliya.webp"),
     "shortName": "Монофосфат Калію ВИРОБНИК YARA NPK 0-52-34"
   },
   {
@@ -43,7 +45,7 @@ export const initialPreparations: Preparation[] = [
     "purposeShort": "листове підживлення",
     "dosage": "1 ст. ложка на 10 л води (по листу)",
     "waitingPeriod": "",
-    "image": "/preparations/prep_store_plantafol_20_20_20.webp",
+    "image": prepImage("prep_store_plantafol_20_20_20.webp"),
     "shortName": "Plantafol 20.20.20 Valagro"
   },
   {
@@ -52,7 +54,7 @@ export const initialPreparations: Preparation[] = [
     "purposeShort": "кальцій від вершинки",
     "dosage": "15-20 г на 10 л води",
     "waitingPeriod": "",
-    "image": "/preparations/prep_store_brexil_ca.webp",
+    "image": prepImage("prep_store_brexil_ca.webp"),
     "shortName": "Brexil Ca Valagro"
   },
   {
@@ -61,7 +63,7 @@ export const initialPreparations: Preparation[] = [
     "purposeShort": "від дефіциту мікроелементів",
     "dosage": "10-20 г на 10 л води",
     "waitingPeriod": "",
-    "image": "/preparations/prep_store_brexil_mix.webp",
+    "image": prepImage("prep_store_brexil_mix.webp"),
     "shortName": "Brexil MIX Valagro"
   },
   {
@@ -70,7 +72,7 @@ export const initialPreparations: Preparation[] = [
     "purposeShort": "від кліщів і трипсів",
     "dosage": "для квітів і овочів: 2 мл на 1 л води (по листу)",
     "waitingPeriod": "7 дней (овощи, клубника), 14 дней (яблоня)",
-    "image": "/preparations/prep_vertimek.webp",
+    "image": prepImage("prep_vertimek.webp"),
     "shortName": "Вертімек 018-ЄС"
   },
   {
@@ -79,7 +81,7 @@ export const initialPreparations: Preparation[] = [
     "purposeShort": "від грибкових інфекцій",
     "dosage": "1,5 мл на 1 л води (під корінь або по листу)",
     "waitingPeriod": "20 дней",
-    "image": "/preparations/prep_previkur.webp",
+    "image": prepImage("prep_previkur.webp"),
     "shortName": "Магнікур Енерджи Превікур"
   },
   {
@@ -88,7 +90,7 @@ export const initialPreparations: Preparation[] = [
     "purposeShort": "для вкорінення",
     "dosage": "Уточнить по инструкции препарата перед применением",
     "waitingPeriod": "",
-    "image": "/preparations/prep_store_ukorinyuvach_ryzopon.webp",
+    "image": prepImage("prep_store_ukorinyuvach_ryzopon.webp"),
     "shortName": "Ризопон"
   },
   {
@@ -97,7 +99,7 @@ export const initialPreparations: Preparation[] = [
     "purposeShort": "від попелиці",
     "dosage": "3 г на 10 л води (по листу)",
     "waitingPeriod": "до 30 дней",
-    "image": "/preparations/prep_store_teppeki_teppeki_insektitsid.webp",
+    "image": prepImage("prep_store_teppeki_teppeki_insektitsid.webp"),
     "shortName": "Теппекі 50 wg"
   },
   {
@@ -106,7 +108,7 @@ export const initialPreparations: Preparation[] = [
     "purposeShort": "для кореневої системи",
     "dosage": "25 мл на 10 л води (під корінь)",
     "waitingPeriod": "",
-    "image": "/preparations/prep_store_biostimulyator_radifarm.webp",
+    "image": prepImage("prep_store_biostimulyator_radifarm.webp"),
     "shortName": "Радіфарм+"
   },
   {
@@ -115,7 +117,7 @@ export const initialPreparations: Preparation[] = [
     "purposeShort": "антистрес після пересадки",
     "dosage": "2,5 мл на 1 л води (по листу)",
     "waitingPeriod": "",
-    "image": "/preparations/prep_megafol.webp",
+    "image": prepImage("prep_megafol.webp"),
     "shortName": "Мегафол+ 25 мл Valagro"
   },
   {
@@ -124,7 +126,7 @@ export const initialPreparations: Preparation[] = [
     "purposeShort": "антистрес і ріст",
     "dosage": "20 мл на 5 л води",
     "waitingPeriod": "",
-    "image": "/preparations/prep_store_biostymulyator_izabion.webp",
+    "image": prepImage("prep_store_biostymulyator_izabion.webp"),
     "shortName": "Ізабіон Syngenta 20 мл"
   },
   {
@@ -133,7 +135,7 @@ export const initialPreparations: Preparation[] = [
     "purposeShort": "прилипач для ЗЗР",
     "dosage": "25 мл на 10 л води",
     "waitingPeriod": "",
-    "image": "/preparations/prep_store_prylypach_glyusten.webp",
+    "image": prepImage("prep_store_prylypach_glyusten.webp"),
     "shortName": "Глюстен 25 мл Syngenta"
   },
   {
@@ -142,7 +144,7 @@ export const initialPreparations: Preparation[] = [
     "purposeShort": "прилипач для листя",
     "dosage": "10 мл на 10 л води",
     "waitingPeriod": "",
-    "image": "/preparations/prep_store_kvantum_quantum.webp",
+    "image": prepImage("prep_store_kvantum_quantum.webp"),
     "shortName": "Квантум / QUANTUM"
   },
   {
@@ -151,7 +153,7 @@ export const initialPreparations: Preparation[] = [
     "purposeShort": "від хруща і дротяника",
     "dosage": "10 мл на 3–10 л води залежно від культури",
     "waitingPeriod": "30 дней",
-    "image": "/preparations/prep_store_protrujnyk_antyhrushh.webp",
+    "image": prepImage("prep_store_protrujnyk_antyhrushh.webp"),
     "shortName": "Антихрущ Укравіт"
   },
   {
@@ -160,7 +162,7 @@ export const initialPreparations: Preparation[] = [
     "purposeShort": "від кліщів",
     "dosage": "1 г на 1 л води",
     "waitingPeriod": "30 дней",
-    "image": "/preparations/prep_store_sanmajt.webp",
+    "image": prepImage("prep_store_sanmajt.webp"),
     "shortName": "Санмайт акарицид"
   },
   {
@@ -169,7 +171,7 @@ export const initialPreparations: Preparation[] = [
     "purposeShort": "від комах і кліщів",
     "dosage": "6 мл на 5 л води",
     "waitingPeriod": "14 дней",
-    "image": "/preparations/prep_store_aktelik.webp",
+    "image": prepImage("prep_store_aktelik.webp"),
     "shortName": "Актелік"
   },
   {
@@ -178,7 +180,7 @@ export const initialPreparations: Preparation[] = [
     "purposeShort": "від тлі та гусениць",
     "dosage": "4 мл на 5 л води (по листу)",
     "waitingPeriod": "14 дней",
-    "image": "/preparations/prep_store_ampligo.webp",
+    "image": prepImage("prep_store_ampligo.webp"),
     "shortName": "Ампліго, 4 мл"
   },
   {
@@ -187,7 +189,7 @@ export const initialPreparations: Preparation[] = [
     "purposeShort": "від гусениць",
     "dosage": "4 г на 5 л води",
     "waitingPeriod": "7 дней",
-    "image": "/preparations/prep_store_proklejm_4_g_syngenta_insektytsyd_zahyst_vid_lystogryzuchyh_shkidnykiv.webp",
+    "image": prepImage("prep_store_proklejm_4_g_syngenta_insektytsyd_zahyst_vid_lystogryzuchyh_shkidnykiv.webp"),
     "shortName": "Проклейм 4 г"
   },
   {
@@ -196,7 +198,7 @@ export const initialPreparations: Preparation[] = [
     "purposeShort": "від попелиці і трипсів",
     "dosage": "3,6 мл на 10 л води",
     "waitingPeriod": "14 дней",
-    "image": "/preparations/prep_store_insektytsyd_enzhio.webp",
+    "image": prepImage("prep_store_insektytsyd_enzhio.webp"),
     "shortName": "Енжіо Syngenta"
   },
   {
@@ -205,7 +207,7 @@ export const initialPreparations: Preparation[] = [
     "purposeShort": "від попелиці і трипсів",
     "dosage": "3 г на 8-10 л води",
     "waitingPeriod": "14 дней",
-    "image": "/preparations/prep_store_insektytsyd_tempo.webp",
+    "image": prepImage("prep_store_insektytsyd_tempo.webp"),
     "shortName": "Темпо"
   },
   {
@@ -214,7 +216,7 @@ export const initialPreparations: Preparation[] = [
     "purposeShort": "від ґрунтових шкідників",
     "dosage": "1,4 г на 4 л води (під корінь або по листу)",
     "waitingPeriod": "7-10 дней",
-    "image": "/preparations/prep_aktara.webp",
+    "image": prepImage("prep_aktara.webp"),
     "shortName": "Актара"
   },
   {
@@ -223,7 +225,7 @@ export const initialPreparations: Preparation[] = [
     "purposeShort": "від гнилі та хвороб",
     "dosage": "Уточнить по инструкции препарата перед применением",
     "waitingPeriod": "10-14 дней",
-    "image": "/preparations/prep_store_ridomil_gold_fungitsyd.webp",
+    "image": prepImage("prep_store_ridomil_gold_fungitsyd.webp"),
     "shortName": "Рідоміл Голд фунгіцид"
   },
   {
@@ -232,7 +234,7 @@ export const initialPreparations: Preparation[] = [
     "purposeShort": "від сірої гнилі",
     "dosage": "10 г на 5–10 л води залежно від культури",
     "waitingPeriod": "7 дней",
-    "image": "/preparations/prep_store_fungitsyd_svitch.webp",
+    "image": prepImage("prep_store_fungitsyd_svitch.webp"),
     "shortName": "Світч 10 г Syngenta"
   },
   {
@@ -241,7 +243,7 @@ export const initialPreparations: Preparation[] = [
     "purposeShort": "від грибкових хвороб",
     "dosage": "6 мл на 5 л води (по листу)",
     "waitingPeriod": "5 дней",
-    "image": "/preparations/prep_store_kvadris.webp",
+    "image": prepImage("prep_store_kvadris.webp"),
     "shortName": "Квадріс"
   },
   {
@@ -250,7 +252,7 @@ export const initialPreparations: Preparation[] = [
     "purposeShort": "від фітофторозу",
     "dosage": "6 мл на 5 л води",
     "waitingPeriod": "14 дней",
-    "image": "/preparations/prep_store_fungitsyd_revus_top.webp",
+    "image": prepImage("prep_store_fungitsyd_revus_top.webp"),
     "shortName": "Ревус Топ"
   },
   {
@@ -259,7 +261,7 @@ export const initialPreparations: Preparation[] = [
     "purposeShort": "від парші і роси",
     "dosage": "6 г на 5 л води",
     "waitingPeriod": "14 дней",
-    "image": "/preparations/prep_store_fungitsyd_signum.webp",
+    "image": prepImage("prep_store_fungitsyd_signum.webp"),
     "shortName": "Сігнум 6 г Яровіт Сервіс"
   },
   {
@@ -268,7 +270,7 @@ export const initialPreparations: Preparation[] = [
     "purposeShort": "від роси і гнилі",
     "dosage": "Уточнить по инструкции препарата перед применением",
     "waitingPeriod": "14 дней",
-    "image": "/preparations/prep_topas.webp",
+    "image": prepImage("prep_topas.webp"),
     "shortName": "Топаз"
   },
   {
@@ -277,7 +279,7 @@ export const initialPreparations: Preparation[] = [
     "purposeShort": "від парші і роси",
     "dosage": "Уточнить по инструкции препарата перед применением",
     "waitingPeriod": "7 дней",
-    "image": "/preparations/prep_store_horus_fungitsyd.webp",
+    "image": prepImage("prep_store_horus_fungitsyd.webp"),
     "shortName": "Хорус фунгіцид, 3 г"
   },
   {
@@ -286,7 +288,7 @@ export const initialPreparations: Preparation[] = [
     "purposeShort": "від борошнистої роси",
     "dosage": "3-5 мл на 10 л води (3 мл профілактично, 5 мл при ознаках хвороби)",
     "waitingPeriod": "14 дней",
-    "image": "/preparations/prep_store_skor.webp",
+    "image": prepImage("prep_store_skor.webp"),
     "shortName": "Скор"
   },
   {
@@ -299,3 +301,4 @@ export const initialPreparations: Preparation[] = [
     "shortName": "Боро Плюс"
   }
 ];
+

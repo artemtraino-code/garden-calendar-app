@@ -629,10 +629,15 @@ export function Design1() {
 
   function scrollToDate(date: string) {
     setActiveDate(date);
-    const el = feedRef.current?.querySelector(`[data-section="${date}"]`) as HTMLElement | null;
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
+    window.requestAnimationFrame(() => {
+      const el = feedRef.current?.querySelector(`[data-section="${date}"]`) as HTMLElement | null;
+      const header = document.querySelector("header") as HTMLElement | null;
+      if (!el) return;
+
+      const headerBottom = header?.getBoundingClientRect().bottom ?? 0;
+      const top = window.scrollY + el.getBoundingClientRect().top - headerBottom - 14;
+      window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+    });
   }
 
   function openNew() {
