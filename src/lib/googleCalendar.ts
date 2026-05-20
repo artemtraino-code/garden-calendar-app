@@ -96,6 +96,7 @@ export function hasValidGoogleToken(): boolean {
 }
 
 export function disconnectGoogleCalendar() {
+  localStorage.removeItem(TOKEN_KEY);
   sessionStorage.removeItem(TOKEN_KEY);
 }
 
@@ -125,17 +126,14 @@ export async function connectGoogleCalendar(settings: CalendarSettings): Promise
       error_callback: reject,
     });
 
-    tokenClient?.requestAccessToken({ prompt: hasValidGoogleToken() ? "" : "consent" });
+    tokenClient?.requestAccessToken({ prompt: readToken() ? "" : "consent" });
   });
 }
 
 export async function syncTaskToGoogle(task: Task, state: AppState, settings: CalendarSettings): Promise<SyncResult> {
   if (!settings.enabled) return { ok: true, task, message: "Google Calendar выключен." };
 
-  const token = readToken();
-  if (!token || token.expiresAt <= Date.now() + 30_000) {
-    throw new Error("Подключите Google Calendar заново. Срок доступа истёк.");
-  }
+  const token = await getValidToken(settings);
 
   const calendarId = encodeURIComponent(settings.calendarId.trim() || "primary");
   const event = taskToGoogleEvent(task, state, settings);
@@ -173,10 +171,7 @@ export async function syncTaskToGoogle(task: Task, state: AppState, settings: Ca
 export async function deleteGoogleEvent(task: Task, settings: CalendarSettings): Promise<void> {
   if (!settings.enabled) return;
 
-  const token = readToken();
-  if (!token || token.expiresAt <= Date.now() + 30_000) {
-    throw new Error("Подключите Google Calendar заново. Срок доступа истёк.");
-  }
+  const token = await getValidToken(settings);
 
   const calendarId = encodeURIComponent(settings.calendarId.trim() || "primary");
   const eventId = task.googleEventId || await findGoogleEventIdForTask(task, settings, token);
@@ -217,10 +212,7 @@ async function findGoogleEventIdForTask(task: Task, settings: CalendarSettings, 
 }
 
 export async function listGoogleCalendars(): Promise<GoogleCalendarListItem[]> {
-  const token = readToken();
-  if (!token || token.expiresAt <= Date.now() + 30_000) {
-    throw new Error("Подключите Google Calendar заново. Срок доступа истёк.");
-  }
+  const token = await getValidToken(DEFAULT_CALENDAR_SETTINGS);
 
   const response = await fetch(`${CALENDAR_API}/users/me/calendarList`, {
     headers: { Authorization: `Bearer ${token.accessToken}` },
@@ -314,9 +306,20 @@ function statusToGoogleColor(status: Status): string {
   return "9";
 }
 
+async function getValidToken(settings: CalendarSettings): Promise<StoredToken> {
+  const token = readToken();
+  if (token && token.expiresAt > Date.now() + 30_000) return token;
+
+  await connectGoogleCalendar(settings);
+  const refreshed = readToken();
+  if (refreshed && refreshed.expiresAt > Date.now() + 30_000) return refreshed;
+
+  throw new Error("Google Calendar не выдал рабочий доступ. Попробуйте подключить календарь ещё раз.");
+}
+
 function readToken(): StoredToken | null {
   try {
-    const raw = sessionStorage.getItem(TOKEN_KEY);
+    const raw = localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY);
     return raw ? JSON.parse(raw) : null;
   } catch {
     return null;
@@ -324,7 +327,8 @@ function readToken(): StoredToken | null {
 }
 
 function writeToken(token: StoredToken) {
-  sessionStorage.setItem(TOKEN_KEY, JSON.stringify(token));
+  localStorage.setItem(TOKEN_KEY, JSON.stringify(token));
+  sessionStorage.removeItem(TOKEN_KEY);
 }
 
 async function loadGisScript() {
