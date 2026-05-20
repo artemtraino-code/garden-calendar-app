@@ -127,19 +127,30 @@ function TaskCard({ task, dashboard }) {
   const works = task.workTypeIds.map((id) => byId(dashboard.workTypes, id)).filter(Boolean);
   const cultures = task.cultureIds.map((id) => byId(dashboard.cultures, id)).filter(Boolean);
   const preparations = task.preparationIds.map((id) => byId(dashboard.preparations, id)).filter(Boolean);
+  const firstWorkIcon = workIcon(works[0]);
+  const workTitle = works.map((work) => work.label || work.name).join(", ") || "Работа";
+  const firstCultureIcon = cultureIcon(cultures[0]);
 
   return (
     <article className={`task-card ${status.tone}`}>
       <button className={`status-pill ${status.tone}`} type="button">{status.label}</button>
       <div className="task-main">
-        <div className="task-title">
-          <span className="date-chip">{displayDate(task.date)}</span>
-          <span className="title-stack">
-            <span>{works.map((work) => `${work.icon ? iconToEmoji(work.icon) + " " : ""}${work.label || work.name}`).join(", ") || "Работа"}</span>
-            <span>{cultures.map((culture) => `${iconToEmoji(culture.icon)} ${culture.name}`).join(", ") || "Культура не выбрана"}</span>
-          </span>
+        <div className="task-row task-row-work">
+          <span className="task-row-icon work-icon">{firstWorkIcon}</span>
+          <span className="work-title">{workTitle}</span>
         </div>
-        {task.note ? <p className="task-note">{task.note}</p> : null}
+        <div className="task-row task-row-culture">
+          <span className="task-row-icon culture-icon">{firstCultureIcon}</span>
+          <div className="culture-line">
+            {cultures.map((culture, index) => (
+              <span className="culture-item" key={culture.id}>
+                {index > 0 ? <span className="culture-inline-icon">{cultureIcon(culture)}</span> : null}
+                <span>{culture.name}</span>
+              </span>
+            ))}
+            {!cultures.length ? <span>Культура не выбрана</span> : null}
+          </div>
+        </div>
       </div>
       <div className="task-side">
         {preparations.length ? (
@@ -155,6 +166,7 @@ function TaskCard({ task, dashboard }) {
           <span className="no-preps">Без препаратов</span>
         )}
       </div>
+      {task.note ? <p className="task-note">{task.note}</p> : null}
     </article>
   );
 }
@@ -187,6 +199,30 @@ function iconToEmoji(icon) {
     "ear-of-corn": "🌽",
   };
   return icons[icon] || icon || "";
+}
+
+function workIcon(work) {
+  const label = `${work?.id || ""} ${work?.label || ""} ${work?.name || ""}`.toLowerCase();
+  return iconToEmoji(work?.icon)
+    || (label.includes("полив") ? "💧" : "")
+    || (label.includes("посад") ? "🌱" : "")
+    || (label.includes("подкорм") ? "🌿" : "")
+    || (label.includes("обработ") ? "🐛" : "")
+    || "🌱";
+}
+
+function cultureIcon(culture) {
+  const label = `${culture?.icon || ""} ${culture?.name || ""}`.toLowerCase();
+  return iconToEmoji(culture?.icon)
+    || (label.includes("клуб") ? "🍓" : "")
+    || (label.includes("петун") ? "🌸" : "")
+    || (label.includes("роз") ? "🌹" : "")
+    || (label.includes("томат") ? "🍅" : "")
+    || (label.includes("пер") ? "🫑" : "")
+    || (label.includes("огур") ? "🥒" : "")
+    || (label.includes("базил") ? "🌿" : "")
+    || (label.includes("цвет") ? "🌸" : "")
+    || "🌱";
 }
 
 function shortWeekday(date) {
