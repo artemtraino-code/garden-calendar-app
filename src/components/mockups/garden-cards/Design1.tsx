@@ -1,9 +1,23 @@
 import { useEffect, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight, Plus, Settings } from "lucide-react";
+import { CalendarCheck, ChevronLeft, ChevronRight, Plus, Settings } from "lucide-react";
 import { TaskDialog as WorkingTaskDialog } from "../../TaskDialog";
 import { SettingsDialog as WorkingSettingsDialog } from "../../SettingsDialog";
 import { initialPreparations } from "../../../lib/preparations";
 import type { AppState, Culture, Group, Preparation, Status, Task, WorkType } from "../../../lib/types";
+import {
+  connectGoogleCalendar,
+  DEFAULT_CALENDAR_SETTINGS,
+  deleteGoogleEvent,
+  disconnectGoogleCalendar,
+  hasValidGoogleToken,
+  listGoogleCalendars,
+  loadCalendarSettings,
+  saveCalendarSettings,
+  syncAllTasksToGoogle,
+  syncTaskToGoogle,
+  type CalendarSettings,
+  type GoogleCalendarListItem,
+} from "../../../lib/googleCalendar";
 
 interface DateTile {
   date: string;
@@ -11,6 +25,7 @@ interface DateTile {
 }
 
 const DATE_WINDOW = 14;
+const APP_STATE_KEY = "garden-calendar-react-state-v1";
 
 const SEED: AppState = {
   version: 1,
@@ -224,6 +239,25 @@ const SEED: AppState = {
     },
   ],
 };
+
+function loadInitialState(): AppState {
+  try {
+    const raw = localStorage.getItem(APP_STATE_KEY);
+    if (!raw) return SEED;
+    const stored = JSON.parse(raw) as AppState;
+    return {
+      ...SEED,
+      ...stored,
+      groups: stored.groups || SEED.groups,
+      cultures: stored.cultures || SEED.cultures,
+      workTypes: stored.workTypes || SEED.workTypes,
+      preparations: stored.preparations || SEED.preparations,
+      tasks: stored.tasks || SEED.tasks,
+    };
+  } catch {
+    return SEED;
+  }
+}
 
 const STATUS_LABEL = { planned: "Запланировано", done: "Выполнено", missed: "Пропущено" };
 
@@ -608,12 +642,25 @@ function DayCard({ tasks, state, onEdit }: { tasks: Task[]; state: AppState; onE
 }
 
 export function Design1() {
-  const [state, setState] = useState<AppState>(SEED);
+  const [state, setState] = useState<AppState>(() => loadInitialState());
+  const [calendarSettings, setCalendarSettings] = useState<CalendarSettings>(() => loadCalendarSettings());
+  const [googleConnected, setGoogleConnected] = useState(() => hasValidGoogleToken());
+  const [googleBusy, setGoogleBusy] = useState(false);
+  const [googleCalendars, setGoogleCalendars] = useState<GoogleCalendarListItem[]>([]);
+  const [syncNotice, setSyncNotice] = useState("");
   const todayStr = today();
   const [activeDate, setActiveDate] = useState(todayStr);
   const [taskDialog, setTaskDialog] = useState<{ open: boolean; task: Task | null; originDate?: string; forceNew?: boolean }>({ open: false, task: null });
   const [settingsOpen, setSettingsOpen] = useState(false);
   const feedRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    localStorage.setItem(APP_STATE_KEY, JSON.stringify(state));
+  }, [state]);
+
+  useEffect(() => {
+    saveCalendarSettings(calendarSettings);
+  }, [calendarSettings]);
 
   const startDate = addDays(todayStr, -3);
   const tiles = Array.from({ length: DATE_WINDOW }, (_, i) => {
@@ -648,21 +695,50 @@ export function Design1() {
     setTaskDialog({ open: true, task: mergeDayTasks(tasks), originDate: tasks[0]?.date });
   }
 
-  function saveTask(task: Task) {
-    setState((current) => {
-      const exists = current.tasks.some((item) => item.id === task.id);
-      if (!exists) return { ...current, tasks: [...current.tasks, task] };
-      const originDate = taskDialog.originDate;
-      const tasks = current.tasks.filter((item) => item.id !== task.id && (!originDate || item.date !== originDate));
-      return { ...current, tasks: [...tasks, task] };
-    });
+  async function saveTask(task: Task) {
+    const originDate = taskDialog.originDate;
+    const exists = state.tasks.some((item) => item.id === task.id);
+    const baseTasks = exists
+      ? state.tasks.filter((item) => item.id !== task.id && (!originDate || item.date !== originDate))
+      : state.tasks;
+    const nextTask = { ...task, updatedAt: today() };
+    const nextState = { ...state, tasks: [...baseTasks, nextTask] };
+    setState(nextState);
+
+    if (!calendarSettings.enabled) return;
+
+    try {
+      const removed = state.tasks.filter((item) => originDate && item.date === originDate && item.id !== nextTask.id);
+      await Promise.all(removed.map((item) => deleteGoogleEvent(item, calendarSettings)));
+      const result = await syncTaskToGoogle(nextTask, nextState, calendarSettings);
+      setState((current) => ({
+        ...current,
+        tasks: current.tasks.map((item) => (item.id === nextTask.id ? result.task : item)),
+      }));
+      setSyncNotice(result.message);
+    } catch (error) {
+      setSyncNotice(error instanceof Error ? error.message : "Не удалось синхронизировать Google Calendar.");
+      setGoogleConnected(hasValidGoogleToken());
+    }
   }
 
-  function deleteTask(id: string) {
-    setState((current) => {
-      const originDate = taskDialog.originDate;
-      return { ...current, tasks: current.tasks.filter((item) => item.id !== id && (!originDate || item.date !== originDate)) };
-    });
+  async function deleteTask(id: string) {
+    const originDate = taskDialog.originDate;
+    const removed = state.tasks.filter((item) => item.id === id || (originDate && item.date === originDate));
+    setState((current) => ({
+      ...current,
+      tasks: current.tasks.filter((item) => item.id !== id && (!originDate || item.date !== originDate)),
+    }));
+
+    if (!calendarSettings.enabled) return;
+
+    try {
+      await Promise.all(removed.map((task) => deleteGoogleEvent(task, calendarSettings)));
+      setSyncNotice("Событие удалено из Google Calendar.");
+    } catch (error) {
+      setSyncNotice(error instanceof Error ? error.message : "Не удалось удалить событие Google Calendar.");
+      setGoogleConnected(hasValidGoogleToken());
+    }
   }
 
   function repeatTask(task: Task) {
@@ -681,6 +757,64 @@ export function Design1() {
     window.setTimeout(() => {
       setTaskDialog({ open: true, task: repeated, forceNew: true });
     }, 180);
+  }
+
+  function changeCalendarSettings(settings: CalendarSettings) {
+    setCalendarSettings({ ...DEFAULT_CALENDAR_SETTINGS, ...settings });
+  }
+
+  async function handleGoogleConnect() {
+    setGoogleBusy(true);
+    setSyncNotice("");
+    try {
+      await connectGoogleCalendar(calendarSettings);
+      setGoogleConnected(true);
+      setGoogleCalendars(await listGoogleCalendars());
+      setSyncNotice("Google Calendar подключен.");
+    } catch (error) {
+      setGoogleConnected(hasValidGoogleToken());
+      setSyncNotice(error instanceof Error ? error.message : "Не удалось подключить Google Calendar.");
+    } finally {
+      setGoogleBusy(false);
+    }
+  }
+
+  function handleGoogleDisconnect() {
+    disconnectGoogleCalendar();
+    setGoogleConnected(false);
+    setSyncNotice("Google Calendar отключен в этом браузере.");
+  }
+
+  async function handleGoogleSyncAll() {
+    setGoogleBusy(true);
+    setSyncNotice("");
+    try {
+      const nextState = await syncAllTasksToGoogle(state, calendarSettings);
+      setState(nextState);
+      setGoogleConnected(true);
+      setSyncNotice("Все задания синхронизированы с Google Calendar.");
+    } catch (error) {
+      setGoogleConnected(hasValidGoogleToken());
+      setSyncNotice(error instanceof Error ? error.message : "Не удалось синхронизировать Google Calendar.");
+    } finally {
+      setGoogleBusy(false);
+    }
+  }
+
+  async function handleGoogleLoadCalendars() {
+    setGoogleBusy(true);
+    setSyncNotice("");
+    try {
+      const calendars = await listGoogleCalendars();
+      setGoogleCalendars(calendars);
+      setGoogleConnected(true);
+      setSyncNotice("Список календарей загружен.");
+    } catch (error) {
+      setGoogleConnected(hasValidGoogleToken());
+      setSyncNotice(error instanceof Error ? error.message : "Не удалось загрузить список календарей.");
+    } finally {
+      setGoogleBusy(false);
+    }
   }
 
   return (
@@ -711,6 +845,20 @@ export function Design1() {
           </div>
 
           <div className="ml-auto flex items-center gap-2">
+            {calendarSettings.enabled && (
+              <button
+                onClick={googleConnected ? handleGoogleSyncAll : handleGoogleConnect}
+                disabled={googleBusy}
+                className={cn(
+                  "hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg transition-colors font-medium disabled:opacity-50",
+                  googleConnected ? "text-emerald-700 bg-emerald-50 hover:bg-emerald-100" : "text-blue-700 bg-blue-50 hover:bg-blue-100"
+                )}
+                title={googleConnected ? "Синхронизировать Google Calendar" : "Подключить Google Calendar"}
+              >
+                <CalendarCheck size={14} />
+                {googleConnected ? "Google" : "Подключить"}
+              </button>
+            )}
             <button onClick={() => setSettingsOpen(true)} className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-sm text-stone-600 hover:bg-stone-100 rounded-lg transition-colors font-medium">
               <Settings size={14} /> Настройки
             </button>
@@ -731,6 +879,11 @@ export function Design1() {
 
       <div className="max-w-5xl mx-auto w-full px-4 sm:px-6 py-4 flex flex-col gap-5 flex-1">
         <div ref={feedRef} className="flex flex-col gap-5 pb-24">
+          {syncNotice && (
+            <div className="rounded-xl border border-stone-200 bg-white px-4 py-2 text-xs text-stone-500 shadow-sm">
+              {syncNotice}
+            </div>
+          )}
           {uniqueDates.map((date) => {
             const dayTasks = state.tasks
               .filter((t) => t.date === date)
@@ -779,8 +932,17 @@ export function Design1() {
       <WorkingSettingsDialog
         open={settingsOpen}
         state={state}
+        calendarSettings={calendarSettings}
         onClose={() => setSettingsOpen(false)}
         onChange={setState}
+        onCalendarSettingsChange={changeCalendarSettings}
+        onGoogleConnect={handleGoogleConnect}
+        onGoogleDisconnect={handleGoogleDisconnect}
+        onGoogleSyncAll={handleGoogleSyncAll}
+        onGoogleLoadCalendars={handleGoogleLoadCalendars}
+        googleCalendars={googleCalendars}
+        googleConnected={googleConnected}
+        googleBusy={googleBusy}
       />
     </div>
   );

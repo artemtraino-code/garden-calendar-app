@@ -48,6 +48,9 @@ export interface Task {
   preparationIds: string[];
   repeat: RepeatConfig;
   notes: string;
+  googleEventId?: string;
+  googleEventLink?: string;
+  googleSyncedAt?: string;
   createdAt: string;
   updatedAt: string;
 }

@@ -1,22 +1,33 @@
 import { useState } from "react";
-import { X, Plus, Trash2, Check, Upload } from "lucide-react";
+import { X, Plus, Trash2, Check, Upload, CalendarDays } from "lucide-react";
 import { MultiPicker } from "./MultiPicker";
 import { nanoid, today, cn } from "../lib/utils";
 import type { AppState, Group, Culture, WorkType, Preparation } from "../lib/types";
+import type { CalendarSettings, GoogleCalendarListItem } from "../lib/googleCalendar";
 
 interface SettingsDialogProps {
   open: boolean;
   state: AppState;
+  calendarSettings: CalendarSettings;
   onClose: () => void;
   onChange: (state: AppState) => void;
+  onCalendarSettingsChange: (settings: CalendarSettings) => void;
+  onGoogleConnect: () => void;
+  onGoogleDisconnect: () => void;
+  onGoogleSyncAll: () => void;
+  onGoogleLoadCalendars: () => void;
+  googleCalendars: GoogleCalendarListItem[];
+  googleConnected: boolean;
+  googleBusy: boolean;
 }
 
-type Tab = "groups" | "works" | "preps";
+type Tab = "groups" | "works" | "preps" | "calendar";
 
 const TABS: { id: Tab; label: string }[] = [
   { id: "groups", label: "Группы и культуры" },
   { id: "works",  label: "Работы"            },
   { id: "preps",  label: "Препараты"         },
+  { id: "calendar", label: "Настройки Google календаря" },
 ];
 
 const ICONS = ["🌸","🌹","🌿","🌱","🌻","🍅","🫑","🍓","🍎","🌳","🌲","🌾","🥦","🧅","🧄","💧","🐛","🪢","✂️","🪵","🌼","🌺","🍇","🍋","🫐","🥕","🌽","🥒","🧆"];
@@ -87,13 +98,31 @@ function prepAbbr(name: string): string {
   return (letters || name.slice(0, 2) || "П").slice(0, 2).toUpperCase();
 }
 
-export function SettingsDialog({ open, state, onClose, onChange }: SettingsDialogProps) {
+export function SettingsDialog({
+  open,
+  state,
+  calendarSettings,
+  onClose,
+  onChange,
+  onCalendarSettingsChange,
+  onGoogleConnect,
+  onGoogleDisconnect,
+  onGoogleSyncAll,
+  onGoogleLoadCalendars,
+  googleCalendars,
+  googleConnected,
+  googleBusy,
+}: SettingsDialogProps) {
   const [tab, setTab] = useState<Tab>("groups");
 
   if (!open) return null;
 
   function updateState(patch: Partial<AppState>) {
     onChange({ ...state, ...patch });
+  }
+
+  function updateCalendarSettings(patch: Partial<CalendarSettings>) {
+    onCalendarSettingsChange({ ...calendarSettings, ...patch });
   }
 
   // ---- Groups ----
@@ -359,6 +388,129 @@ export function SettingsDialog({ open, state, onClose, onChange }: SettingsDialo
                   </div>
                 ))}
               </div>
+            </div>
+          )}
+
+          {tab === "calendar" && (
+            <div className="flex flex-col gap-4">
+              <div className="rounded-2xl border border-blue-100 bg-blue-50/70 p-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-white border border-blue-100 flex items-center justify-center text-blue-600 shrink-0">
+                    <CalendarDays size={18} />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="text-sm font-bold text-stone-800">Настройки Google календаря</h3>
+                    <p className="text-xs text-stone-500 mt-1 leading-relaxed">
+                      Задания будут создаваться как события на весь день. При изменении статуса обновляется цвет и описание события.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <label className="flex items-center gap-2 text-sm font-medium text-stone-700">
+                <input
+                  type="checkbox"
+                  checked={calendarSettings.enabled}
+                  onChange={(event) => updateCalendarSettings({ enabled: event.target.checked })}
+                  className="w-4 h-4 accent-emerald-600"
+                />
+                Включить синхронизацию
+              </label>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="flex flex-col gap-1.5 sm:col-span-2">
+                  <label className="text-xs font-semibold text-stone-500 uppercase tracking-wide">Google OAuth Client ID</label>
+                  <input
+                    value={calendarSettings.clientId}
+                    onChange={(event) => updateCalendarSettings({ clientId: event.target.value.trim() })}
+                    placeholder="xxxxx.apps.googleusercontent.com"
+                    className="px-3 py-2 rounded-xl border border-stone-200 text-sm bg-white focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100"
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold text-stone-500 uppercase tracking-wide">Календарь аккаунта</label>
+                  <select
+                    value={calendarSettings.calendarId}
+                    onChange={(event) => updateCalendarSettings({ calendarId: event.target.value || "primary" })}
+                    className="px-3 py-2 rounded-xl border border-stone-200 text-sm bg-white focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100"
+                  >
+                    <option value="primary">Основной календарь</option>
+                    {googleCalendars.map((calendar) => (
+                      <option key={calendar.id} value={calendar.id}>
+                        {calendar.summary}{calendar.primary ? " · основной" : ""}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={onGoogleLoadCalendars}
+                    disabled={googleBusy || !googleConnected}
+                    className="self-start text-[11px] font-semibold text-blue-600 hover:text-blue-700 disabled:opacity-40"
+                  >
+                    Загрузить список календарей
+                  </button>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold text-stone-500 uppercase tracking-wide">Время события</label>
+                  <input
+                    type="time"
+                    value={calendarSettings.eventTime}
+                    onChange={(event) => updateCalendarSettings({ eventTime: event.target.value || "09:00" })}
+                    className="px-3 py-2 rounded-xl border border-stone-200 text-sm bg-white focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100"
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold text-stone-500 uppercase tracking-wide">Напоминание, минут</label>
+                  <input
+                    type="number"
+                    min={0}
+                    max={10080}
+                    value={calendarSettings.reminderMinutes}
+                    onChange={(event) => updateCalendarSettings({ reminderMinutes: Number(event.target.value) || 0 })}
+                    className="px-3 py-2 rounded-xl border border-stone-200 text-sm bg-white focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100"
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold text-stone-500 uppercase tracking-wide">Calendar ID вручную</label>
+                  <input
+                    value={calendarSettings.calendarId}
+                    onChange={(event) => updateCalendarSettings({ calendarId: event.target.value.trim() || "primary" })}
+                    placeholder="primary или адрес календаря"
+                    className="px-3 py-2 rounded-xl border border-stone-200 text-sm bg-white focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100"
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={onGoogleConnect}
+                  disabled={googleBusy || !calendarSettings.clientId.trim()}
+                  className="px-4 py-2 rounded-xl text-sm font-semibold bg-emerald-600 hover:bg-emerald-700 text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  {googleConnected ? "Обновить доступ" : "Подключить Google"}
+                </button>
+                <button
+                  type="button"
+                  onClick={onGoogleSyncAll}
+                  disabled={googleBusy || !googleConnected || !calendarSettings.enabled}
+                  className="px-4 py-2 rounded-xl text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  Синхронизировать всё
+                </button>
+                <button
+                  type="button"
+                  onClick={onGoogleDisconnect}
+                  disabled={googleBusy || !googleConnected}
+                  className="px-4 py-2 rounded-xl text-sm font-medium text-stone-600 hover:bg-stone-100 border border-stone-200 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  Отключить
+                </button>
+              </div>
+
+              <p className="text-xs text-stone-400 leading-relaxed">
+                Для GitHub Pages доступ Google действует как браузерная сессия. Если Google попросит вход повторно, нажмите “Подключить Google” ещё раз.
+              </p>
             </div>
           )}
         </div>
