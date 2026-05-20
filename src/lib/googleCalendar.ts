@@ -8,7 +8,7 @@ const SCOPE = [
   "https://www.googleapis.com/auth/calendar.calendarlist.readonly",
 ].join(" ");
 const TOKEN_KEY = "garden-calendar-google-token-v1";
-const SETTINGS_KEY = "garden-calendar-google-settings-v1";
+const SETTINGS_KEY = "garden-calendar-google-settings-v2";
 const DEFAULT_GOOGLE_CLIENT_ID = "149244479390-u8bk08lluj1tb58593kpdmgfmbj7bl94.apps.googleusercontent.com";
 
 declare global {
