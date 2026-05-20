@@ -79,7 +79,6 @@ export function MultiPicker({ label, options, selected, onChange, placeholder }:
             <div className="p-2 border-b border-stone-100 flex items-center gap-2">
               <Search size={14} className="text-stone-400 flex-shrink-0" />
               <input
-                autoFocus
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Поиск..."
