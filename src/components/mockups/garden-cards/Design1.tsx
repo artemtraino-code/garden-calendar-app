@@ -612,6 +612,7 @@ export function Design1() {
   const [taskDialog, setTaskDialog] = useState<{ open: boolean; task: Task | null; originDate?: string; forceNew?: boolean }>({ open: false, task: null });
   const [settingsOpen, setSettingsOpen] = useState(false);
   const feedRef = useRef<HTMLDivElement>(null);
+  const emptyStateRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     localStorage.setItem(APP_STATE_KEY, JSON.stringify(state));
@@ -628,7 +629,7 @@ export function Design1() {
   });
 
   const allDates = Array.from(new Set(state.tasks.map((t) => t.date))).sort();
-  const uniqueDates = [...new Set([...tiles.map((t) => t.date), ...allDates, emptyDate].filter(Boolean))].sort();
+  const uniqueDates = [...new Set([...tiles.map((t) => t.date), ...allDates].filter(Boolean))].sort();
   const missedCount = state.tasks.filter((t) => getEffectiveStatus(t) === "missed").length;
   const plannedCount = state.tasks.filter((t) => getEffectiveStatus(t) === "planned").length;
   const doneCount = state.tasks.filter((t) => getEffectiveStatus(t) === "done").length;
@@ -636,7 +637,21 @@ export function Design1() {
   function scrollToDate(date: string) {
     setActiveDate(date);
     const hasTasks = state.tasks.some((task) => task.date === date);
-    setEmptyDate(hasTasks ? "" : date);
+    if (!hasTasks) {
+      setEmptyDate(date);
+      window.requestAnimationFrame(() => window.requestAnimationFrame(() => {
+        const el = emptyStateRef.current;
+        const header = document.querySelector("header") as HTMLElement | null;
+        if (!el) return;
+
+        const headerBottom = header?.getBoundingClientRect().bottom ?? 0;
+        const top = window.scrollY + el.getBoundingClientRect().top - headerBottom - 14;
+        window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+      }));
+      return;
+    }
+
+    setEmptyDate("");
 
     window.requestAnimationFrame(() => window.requestAnimationFrame(() => {
       const el = feedRef.current?.querySelector(`[data-section="${date}"]`) as HTMLElement | null;
@@ -846,6 +861,12 @@ export function Design1() {
               {syncNotice}
             </div>
           )}
+          {emptyDate && !state.tasks.some((task) => task.date === emptyDate) && (
+            <div ref={emptyStateRef} className="rounded-2xl border border-dashed border-stone-200 bg-white px-5 py-5 text-center shadow-sm">
+              <p className="text-sm font-semibold text-stone-700">На {formatDateLong(emptyDate)} работы не назначены</p>
+              <p className="mt-1 text-xs text-stone-400">Можно создать задание через зелёную кнопку сверху.</p>
+            </div>
+          )}
           {uniqueDates.map((date) => {
             const dayTasks = state.tasks
               .filter((t) => t.date === date)
@@ -854,7 +875,7 @@ export function Design1() {
                 return (order[getEffectiveStatus(a)] ?? 9) - (order[getEffectiveStatus(b)] ?? 9);
               });
 
-            if (dayTasks.length === 0 && date !== emptyDate) return null;
+            if (dayTasks.length === 0) return null;
             const isToday = date === todayStr;
 
             return (
@@ -867,14 +888,7 @@ export function Design1() {
                   <span className="text-xs text-stone-300">{dayTasks.length}</span>
                 </div>
 
-                {dayTasks.length > 0 ? (
-                  <DayCard tasks={dayTasks} state={state} onEdit={() => openDayEdit(dayTasks)} />
-                ) : (
-                  <div className="rounded-2xl border border-dashed border-stone-200 bg-white px-5 py-5 text-center shadow-sm">
-                    <p className="text-sm font-semibold text-stone-700">На {formatDateLong(date)} работы не назначены</p>
-                    <p className="mt-1 text-xs text-stone-400">Можно создать задание через зелёную кнопку сверху.</p>
-                  </div>
-                )}
+                <DayCard tasks={dayTasks} state={state} onEdit={() => openDayEdit(dayTasks)} />
               </div>
             );
           })}
